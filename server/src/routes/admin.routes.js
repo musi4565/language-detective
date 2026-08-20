@@ -25,11 +25,15 @@ const languageSchema = z.object({
   }),
 });
 
+const userListSchema = z.object({
+  query: z.object({ page: z.string().optional(), limit: z.string().optional(), search: z.string().optional() }),
+});
+
 const idParam = z.object({
   params: z.object({ id: z.string().min(1) }),
 });
 
-router.get("/users", validate({ query: z.object({ page: z.string().optional(), limit: z.string().optional(), search: z.string().optional() }) }), listUsers);
+router.get("/users", validate(userListSchema), listUsers);
 router.get("/users/:id", validate(idParam), userStats);
 router.post("/users/:id/block", validate(idParam), toggleBlock);
 router.get("/analytics", analytics);

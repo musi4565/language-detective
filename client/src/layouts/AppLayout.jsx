@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -18,7 +18,6 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { useState } from "react";
 import { useAuthStore } from "../store/authStore.js";
 import { useThemeStore } from "../store/themeStore.js";
 import Toasts from "../components/Toasts.jsx";
