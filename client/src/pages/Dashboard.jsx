@@ -11,10 +11,12 @@ import {
   Zap,
   ArrowRight,
   MessageSquare,
+  CheckCircle2,
 } from "lucide-react";
 import api from "../api/client.js";
 import { useAuthStore } from "../store/authStore.js";
 import { apiErrorMessage } from "../api/client.js";
+import { toast } from "../store/toastStore.js";
 import Spinner from "../components/Spinner.jsx";
 import ErrorState from "../components/ErrorState.jsx";
 import ScoreRing from "../components/ScoreRing.jsx";
@@ -159,17 +161,7 @@ export default function Dashboard() {
         </div>
 
         <div className="space-y-6">
-          <div className="card border-brand-500/40 bg-gradient-to-br from-brand-600 to-violet-700 text-white">
-            <div className="flex items-center gap-2">
-              <Target className="h-5 w-5" />
-              <h3 className="font-semibold">Daily Challenge</h3>
-            </div>
-            <p className="mt-2 text-sm text-white/80">Correct today's sentence for +20 XP</p>
-            <Link to="/app/practice" className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white/20 px-4 py-2.5 text-sm font-semibold hover:bg-white/30">
-              Take the challenge <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-
+          <DailyChallengeCard />
           <div className="card">
             <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Recommended</h3>
             <div className="space-y-2">
@@ -197,6 +189,76 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function DailyChallengeCard() {
+  const [challenge, setChallenge] = useState(null);
+  const [answer, setAnswer] = useState("");
+  const [feedback, setFeedback] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    api
+      .get("/progress/challenge")
+      .then(({ data }) => setChallenge(data.data.challenge))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const { data } = await api.post("/progress/challenge/submit", { answer });
+      setFeedback(data.data);
+      if (data.data.isCorrect) toast.success(`+${data.data.xpEarned} XP`);
+    } catch (err) {
+      toast.error(apiErrorMessage(err));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="card border-brand-500/40 bg-gradient-to-br from-brand-600 to-violet-700 text-white">
+      <div className="flex items-center gap-2">
+        <Target className="h-5 w-5" />
+        <h3 className="font-semibold">Daily Challenge</h3>
+        {challenge?.attempt && !feedback && (
+          <span className="ml-auto text-xs text-white/70">{challenge.attempt.isCorrect ? "✓ completed" : "attempted"}</span>
+        )}
+      </div>
+      {loading ? (
+        <div className="mt-4 flex justify-center text-white/70"><Spinner size={20} /></div>
+      ) : challenge?.correctAnswer ? (
+        <p className="mt-2 text-sm text-white/80">{challenge.prompt}</p>
+      ) : (
+        <p className="mt-2 text-sm text-white/80">{challenge.prompt}</p>
+      )}
+      {!feedback ? (
+        <form onSubmit={submit} className="mt-4 flex gap-2">
+          <input
+            className="flex-1 rounded-xl border border-white/20 bg-white/15 px-3 py-2 text-sm text-white placeholder-white/50 focus:border-white/40 focus:outline-none"
+            placeholder="Your corrected sentence…"
+            value={answer}
+            onChange={(e) => setAnswer(e.target.value)}
+            disabled={!!challenge?.attempt}
+          />
+          <button type="submit" disabled={submitting || !answer.trim() || !!challenge?.attempt} className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-brand-700 hover:bg-white/90">
+            {submitting ? <Spinner size={16} /> : "+20 XP"}
+          </button>
+        </form>
+      ) : (
+        <div className="mt-4">
+          <p className={`text-sm font-semibold ${feedback.isCorrect ? "text-emerald-300" : "text-red-300"}`}>
+            {feedback.isCorrect ? `Correct! +${feedback.xpEarned} XP` : `Not quite — correct answer: "${feedback.correctAnswer}"`}
+          </p>
+          {feedback.explanation && <p className="mt-1 text-xs text-white/70">{feedback.explanation}</p>}
+        </div>
+      )}
     </div>
   );
 }

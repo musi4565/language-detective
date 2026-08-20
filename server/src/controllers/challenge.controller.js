@@ -36,8 +36,10 @@ export const today = asyncHandler(async (req, res) => {
     where: { userId_challengeId: { userId: req.user.id, challengeId: challenge.id } },
   });
 
-  const { correctAnswer: _ca, ...safe } = challenge;
-  success(res, { challenge: attempt?.isCorrect ? safe : { ...safe, correctAnswer: undefined }, attempt });
+  const { correctAnswer, ...safe } = challenge;
+  // No attempt → hide the answer so the user tries first.
+  // Attempted → reveal the answer + explanation so the user can learn from it.
+  success(res, { challenge: attempt ? challenge : { ...safe, correctAnswer: undefined }, attempt });
 });
 
 export const submit = asyncHandler(async (req, res) => {
