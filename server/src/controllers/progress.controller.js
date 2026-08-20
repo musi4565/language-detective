@@ -82,7 +82,7 @@ export const dashboard = asyncHandler(async (req, res) => {
 export const progress = asyncHandler(async (req, res) => {
   const userId = req.user.id;
 
-  const [user, weekly, totals, achievements, mistakesByCategory] = await Promise.all([
+  const [user, weekly, totals, userAchievements, mistakesByCategory] = await Promise.all([
     prisma.user.findUnique({ where: { id: userId } }),
     prisma.dailyProgress.findMany({
       where: { userId, date: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } },
@@ -106,6 +106,14 @@ export const progress = asyncHandler(async (req, res) => {
       _count: { category: true },
     }),
   ]);
+
+  const allAchievements = await prisma.achievement.findMany({ orderBy: { xpReward: "asc" } });
+  const unlockedMap = new Map(userAchievements.map((ua) => [ua.achievementId, ua.unlockedAt]));
+  const achievements = allAchievements.map((a) => ({
+    ...a,
+    unlocked: unlockedMap.has(a.id),
+    unlockedAt: unlockedMap.get(a.id) || null,
+  }));
 
   const mistakeTotal = mistakesByCategory.reduce((s, c) => s + c._count.category, 0);
 
@@ -144,7 +152,7 @@ export const progress = asyncHandler(async (req, res) => {
     },
     weekly,
     mistakeTrend: weekBuckets,
-    achievements: achievements.map((a) => a.achievement),
+    achievements,
     mistakesByCategory,
   });
 });

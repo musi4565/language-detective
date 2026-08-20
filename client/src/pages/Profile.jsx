@@ -1,0 +1,156 @@
+import { useState } from "react";
+import { User, Mail, BookOpen, Languages, KeyRound, Camera } from "lucide-react";
+import api from "../api/client.js";
+import { useAuthStore } from "../store/authStore.js";
+import { apiErrorMessage } from "../api/client.js";
+import { toast } from "../store/toastStore.js";
+import Spinner from "../components/Spinner.jsx";
+
+const LANGUAGES = ["English", "Russian", "Uzbek", "Spanish", "French", "German", "Arabic", "Chinese", "Turkish", "Italian", "Korean", "Japanese"];
+const LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"];
+const AVATARS = [
+  "https://api.dicebear.com/9.x/avataaars/svg?seed=A",
+  "https://api.dicebear.com/9.x/avataaars/svg?seed=B",
+  "https://api.dicebear.com/9.x/avataaars/svg?seed=C",
+  "https://api.dicebear.com/9.x/avataaars/svg?seed=D",
+  "https://api.dicebear.com/9.x/avataaars/svg?seed=E",
+  "https://api.dicebear.com/9.x/avataaars/svg?seed=F",
+];
+
+export default function Profile() {
+  const { user, setUser } = useAuthStore();
+  const [form, setForm] = useState({
+    name: user?.name || "",
+    nativeLanguage: user?.nativeLanguage || "English",
+    learningLanguage: user?.learningLanguage || "English",
+    level: user?.level || "A1",
+  });
+  const [saving, setSaving] = useState(false);
+  const [passForm, setPassForm] = useState({ currentPassword: "", newPassword: "" });
+  const [savingPass, setSavingPass] = useState(false);
+
+  const saveProfile = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const { data } = await api.patch("/auth/profile", form);
+      setUser(data.data.user);
+      toast.success("Profile updated");
+    } catch (err) {
+      toast.error(apiErrorMessage(err));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const setAvatar = async (avatar) => {
+    try {
+      const { data } = await api.patch("/auth/profile", { avatar });
+      setUser(data.data.user);
+      toast.success("Avatar updated");
+    } catch (err) {
+      toast.error(apiErrorMessage(err));
+    }
+  };
+
+  const changePassword = async (e) => {
+    e.preventDefault();
+    setSavingPass(true);
+    try {
+      await api.post("/auth/change-password", passForm);
+      setPassForm({ currentPassword: "", newPassword: "" });
+      toast.success("Password changed");
+    } catch (err) {
+      toast.error(apiErrorMessage(err));
+    } finally {
+      setSavingPass(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold">Profile</h1>
+
+      <div className="card">
+        <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-brand-500 to-violet-600 text-2xl font-bold text-white">
+              {user.avatar ? <img src={user.avatar} alt="avatar" className="h-full w-full" /> : user.name.charAt(0).toUpperCase()}
+            </div>
+            <button className="btn-outline px-3 py-1.5 text-xs"><Camera className="h-3.5 w-3.5" /> Change</button>
+          </div>
+          <div className="flex-1">
+            <h2 className="text-lg font-bold">{user.name}</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className="badge-indigo">Level {user.level}</span>
+              <span className="badge-amber">⚡ {user.xp} XP</span>
+              <span className="badge-green">🔥 {user.streak} day streak</span>
+              <span className="badge-slate">{user.role}</span>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {AVATARS.map((a) => (
+                <button key={a} onClick={() => setAvatar(a)} className={`overflow-hidden rounded-lg border-2 transition-colors ${user.avatar === a ? "border-brand-500" : "border-transparent hover:border-brand-300"}`}>
+                  <img src={a} alt="avatar option" className="h-10 w-10" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <form onSubmit={saveProfile} className="card space-y-4">
+          <h3 className="font-bold">Learning settings</h3>
+          <div>
+            <label className="label flex items-center gap-1.5"><User className="h-3.5 w-3.5" /> Name</label>
+            <input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className="label flex items-center gap-1.5"><Languages className="h-3.5 w-3.5" /> Native language</label>
+              <select className="input" value={form.nativeLanguage} onChange={(e) => setForm({ ...form, nativeLanguage: e.target.value })}>
+                {LANGUAGES.map((l) => <option key={l}>{l}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="label flex items-center gap-1.5"><BookOpen className="h-3.5 w-3.5" /> Learning</label>
+              <select className="input" value={form.learningLanguage} onChange={(e) => setForm({ ...form, learningLanguage: e.target.value })}>
+                {LANGUAGES.map((l) => <option key={l}>{l}</option>)}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="label">Level</label>
+            <div className="flex flex-wrap gap-2">
+              {LEVELS.map((l) => (
+                <button
+                  key={l}
+                  type="button"
+                  onClick={() => setForm({ ...form, level: l })}
+                  className={`rounded-lg border px-3 py-1.5 text-sm font-bold ${form.level === l ? "border-brand-600 bg-brand-600 text-white" : "border-slate-300 dark:border-slate-600"}`}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+          </div>
+          <button type="submit" disabled={saving} className="btn-primary">{saving ? <Spinner size={16} /> : "Save changes"}</button>
+        </form>
+
+        <form onSubmit={changePassword} className="card space-y-4">
+          <h3 className="font-bold flex items-center gap-2"><KeyRound className="h-4 w-4" /> Change password</h3>
+          <div>
+            <label className="label">Current password</label>
+            <input type="password" className="input" value={passForm.currentPassword} onChange={(e) => setPassForm({ ...passForm, currentPassword: e.target.value })} required />
+          </div>
+          <div>
+            <label className="label">New password</label>
+            <input type="password" className="input" minLength={6} value={passForm.newPassword} onChange={(e) => setPassForm({ ...passForm, newPassword: e.target.value })} required />
+          </div>
+          <button type="submit" disabled={savingPass} className="btn-secondary">{savingPass ? <Spinner size={16} /> : "Update password"}</button>
+        </form>
+      </div>
+    </div>
+  );
+}
