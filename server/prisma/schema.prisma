@@ -1,0 +1,379 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum UserLevel {
+  A1
+  A2
+  B1
+  B2
+  C1
+  C2
+}
+
+enum MistakeCategory {
+  GRAMMAR
+  VOCABULARY
+  SPELLING
+  WORD_ORDER
+  TENSE
+  PREPOSITION
+  ARTICLE
+  SENTENCE_STRUCTURE
+  PRONUNCIATION
+}
+
+enum Severity {
+  low
+  medium
+  high
+}
+
+enum ExerciseType {
+  MULTIPLE_CHOICE
+  FILL_BLANK
+  CORRECT_SENTENCE
+  TRANSLATE
+  REARRANGE
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+}
+
+model User {
+  id               String       @id @default(cuid())
+  name             String
+  email            String       @unique
+  password         String
+  nativeLanguage   String       @default("English")
+  learningLanguage String       @default("English")
+  level            UserLevel?   @default(A1)
+  role             Role         @default(USER)
+  avatar           String?
+  xp               Int          @default(0)
+  streak           Int          @default(0)
+  lastActiveDate   DateTime?
+  blocked          Boolean      @default(false)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  writingSubmissions   WritingSubmission[]
+  mistakes             Mistake[]
+  exercises            Exercise[]
+  exerciseAttempts     ExerciseAttempt[]
+  vocabulary           Vocabulary[]
+  vocabularyReviews    VocabularyReview[]
+  chatSessions         ChatSession[]
+  speakingSessions     SpeakingSession[]
+  dailyProgress        DailyProgress[]
+  userAchievements     UserAchievement[]
+  placementResults     PlacementResult[]
+  dailyChallengeAttempts DailyChallengeAttempt[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Language {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  flag      String?
+  createdAt DateTime @default(now())
+
+  @@index([code])
+}
+
+model PlacementTest {
+  id        String               @id @default(cuid())
+  title     String
+  language  String               @default("English")
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  questions PlacementQuestion[]
+  results   PlacementResult[]
+}
+
+model PlacementQuestion {
+  id            String        @id @default(cuid())
+  testId        String
+  type          String // GRAMMAR | VOCABULARY | READING
+  prompt        String
+  options       String[] // JSON array of options (4-5)
+  correctAnswer String
+  difficulty    String        @default("medium")
+  createdAt     DateTime      @default(now())
+
+  test PlacementTest @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@index([testId])
+}
+
+model PlacementResult {
+  id               String   @id @default(cuid())
+  userId           String
+  testId           String
+  score            Int
+  total            Int
+  percentage       Float
+  recommendedLevel UserLevel
+  weakAreas        String[] // e.g. ["Past Simple", "Articles"]
+  strongAreas      String[] // e.g. ["Vocabulary", "Present Simple"]
+  createdAt        DateTime @default(now())
+
+  user User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  test PlacementTest    @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model WritingSubmission {
+  id               String   @id @default(cuid())
+  userId           String
+  originalText     String
+  correctedText    String
+  overallScore     Int
+  summary          String?
+  strengths        String[] @default([])
+  weaknesses       String[] @default([])
+  recommendedTopics String[] @default([])
+  createdAt        DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model Mistake {
+  id             String         @id @default(cuid())
+  userId         String
+  originalText   String
+  correctedText  String
+  explanation    String
+  category       MistakeCategory
+  topic          String?
+  severity       Severity       @default(medium)
+  source         String         @default("writing") // writing | chat | speaking | practice
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  reviewCount    Int            @default(0)
+  correctCount   Int            @default(0)
+  incorrectCount Int            @default(0)
+  masteryScore   Int            @default(0) // 0-100
+  nextReviewAt   DateTime?
+  lastReviewedAt DateTime?
+  exerciseId     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, category])
+  @@index([userId, nextReviewAt])
+  @@index([userId, createdAt])
+}
+
+model Exercise {
+  id            String       @id @default(cuid())
+  userId        String
+  type          ExerciseType
+  prompt        String
+  options       String[]     @default([])
+  correctAnswer String
+  explanation   String?
+  topic         String?
+  category      MistakeCategory?
+  difficulty    String       @default("medium")
+  sourceMistakeId String?
+  dueDate       DateTime?
+  completed     Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  attempts ExerciseAttempt[]
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, completed])
+  @@index([userId, dueDate])
+}
+
+model ExerciseAttempt {
+  id         String   @id @default(cuid())
+  userId     String
+  exerciseId String
+  answer     String
+  isCorrect  Boolean
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([exerciseId])
+}
+
+model Vocabulary {
+  id             String   @id @default(cuid())
+  userId         String
+  word           String
+  translation    String?
+  definition     String?
+  example        String?
+  pronunciation  String?
+  difficulty     String   @default("medium")
+  masteryScore   Int      @default(0)
+  learnedAt      DateTime @default(now())
+  nextReviewAt   DateTime?
+  lastReviewedAt DateTime?
+  reviewCount    Int      @default(0)
+  correctCount   Int      @default(0)
+  incorrectCount Int      @default(0)
+  source         String   @default("manual") // manual | writing | chat
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  reviews VocabularyReview[]
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, word])
+  @@index([userId, nextReviewAt])
+}
+
+model VocabularyReview {
+  id           String   @id @default(cuid())
+  vocabularyId String
+  userId       String
+  isCorrect    Boolean
+  createdAt    DateTime @default(now())
+
+  vocabulary Vocabulary @relation(fields: [vocabularyId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([vocabularyId])
+}
+
+model ChatSession {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String   @default("New conversation")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages ChatMessage[]
+
+  @@index([userId, updatedAt])
+}
+
+model ChatMessage {
+  id           String   @id @default(cuid())
+  sessionId    String
+  role         ChatRole
+  content      String
+  corrections  Json? // detected mistakes in user's message
+  createdAt    DateTime @default(now())
+
+  session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+}
+
+model SpeakingSession {
+  id           String   @id @default(cuid())
+  userId       String
+  transcript   String
+  overallScore Int
+  pronunciation Int?
+  grammar      Int?
+  fluency      Int?
+  vocabulary   Int?
+  feedback     String?
+  mistakes     Json?
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model DailyProgress {
+  id                  String   @id @default(cuid())
+  userId              String
+  date                DateTime @db.Date
+  xpEarned            Int      @default(0)
+  writingAnalyses     Int      @default(0)
+  exercisesCompleted  Int      @default(0)
+  speakingSessions    Int      @default(0)
+  mistakesCorrected   Int      @default(0)
+  vocabularyLearned   Int      @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId, date])
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  title       String
+  description String
+  icon        String   @default("trophy")
+  xpReward    Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  userAchievements UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime    @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+}
+
+model DailyChallenge {
+  id            String   @id @default(cuid())
+  date          DateTime @unique @db.Date
+  prompt        String
+  correctAnswer String
+  explanation   String?
+  createdAt     DateTime @default(now())
+
+  attempts DailyChallengeAttempt[]
+}
+
+model DailyChallengeAttempt {
+  id          String   @id @default(cuid())
+  userId      String
+  challengeId String
+  answer      String
+  isCorrect   Boolean
+  createdAt   DateTime @default(now())
+
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge DailyChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, challengeId])
+  @@index([userId])
+}
