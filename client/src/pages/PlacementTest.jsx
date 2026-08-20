@@ -7,10 +7,12 @@ import { useAuthStore } from "../store/authStore.js";
 import { toast } from "../store/toastStore.js";
 import Spinner from "../components/Spinner.jsx";
 import ErrorState from "../components/ErrorState.jsx";
+import { useT } from "../i18n/index.js";
 
 export default function PlacementTest() {
   const navigate = useNavigate();
   const { setUser } = useAuthStore();
+  const t = useT();
   const [test, setTest] = useState(null);
   const [answers, setAnswers] = useState({});
   const [index, setIndex] = useState(0);
@@ -50,18 +52,18 @@ export default function PlacementTest() {
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-100 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300">
             <ClipboardCheck className="h-8 w-8" />
           </div>
-          <h1 className="mt-4 text-2xl font-bold">Placement complete!</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Your score and recommended level</p>
+          <h1 className="mt-4 text-2xl font-bold">{t("auth.placementComplete")}</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t("auth.placementSub")}</p>
 
           <div className="mt-6 grid grid-cols-3 gap-3">
-            <div className="card"><p className="text-2xl font-bold text-brand-600 dark:text-brand-300">{result.score}%</p><p className="text-xs text-slate-400">Score</p></div>
-            <div className="card"><p className="text-2xl font-bold text-emerald-600 dark:text-emerald-300">{result.recommendedLevel}</p><p className="text-xs text-slate-400">Level</p></div>
+            <div className="card"><p className="text-2xl font-bold text-brand-600 dark:text-brand-300">{result.score}%</p><p className="text-xs text-slate-400">{t("common.score")}</p></div>
+            <div className="card"><p className="text-2xl font-bold text-emerald-600 dark:text-emerald-300">{result.recommendedLevel}</p><p className="text-xs text-slate-400">{t("common.levelWord")}</p></div>
             <div className="card"><p className="text-2xl font-bold text-amber-600 dark:text-amber-300">+20</p><p className="text-xs text-slate-400">XP</p></div>
           </div>
 
           {result.weakAreas.length > 0 && (
             <div className="mt-4 rounded-xl bg-red-500/10 p-4 text-left">
-              <p className="text-sm font-semibold text-red-600 dark:text-red-400">Weak areas</p>
+              <p className="text-sm font-semibold text-red-600 dark:text-red-400">{t("common.weakAreas")}</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {result.weakAreas.map((w) => <span key={w} className="badge-red">{w}</span>)}
               </div>
@@ -69,7 +71,7 @@ export default function PlacementTest() {
           )}
           {result.strongAreas.length > 0 && (
             <div className="mt-3 rounded-xl bg-emerald-500/10 p-4 text-left">
-              <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Strong areas</p>
+              <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">{t("common.strongAreas")}</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {result.strongAreas.map((s) => <span key={s} className="badge-green">{s}</span>)}
               </div>
@@ -77,7 +79,7 @@ export default function PlacementTest() {
           )}
 
           <button onClick={() => { setUser({ ...(JSON.parse(localStorage.getItem("ld_user") || "{}")), level: result.recommendedLevel }); navigate("/app"); }} className="btn-primary mt-6 w-full">
-            Go to dashboard
+            {t("auth.goDashboard")}
           </button>
         </div>
       </div>
@@ -108,8 +110,8 @@ export default function PlacementTest() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-600 via-brand-700 to-violet-800 p-4 py-10">
       <div className="w-full max-w-2xl">
         <div className="mb-4 flex items-center justify-between text-white">
-          <h1 className="text-lg font-bold">English Placement Test</h1>
-          <span className="rounded-full bg-white/20 px-3 py-1 text-sm font-semibold">{answered}/{total} answered</span>
+          <h1 className="text-lg font-bold">{t("auth.placementTitle")}</h1>
+          <span className="rounded-full bg-white/20 px-3 py-1 text-sm font-semibold">{answered}/{total} {t("auth.answered")}</span>
         </div>
         <div className="mb-4 h-2 overflow-hidden rounded-full bg-white/20">
           <div className="h-full rounded-full bg-white transition-all" style={{ width: `${(answered / total) * 100}%` }} />
@@ -146,15 +148,15 @@ export default function PlacementTest() {
               disabled={index === 0}
               className="btn-outline"
             >
-              <ArrowLeft className="h-4 w-4" /> Back
+              <ArrowLeft className="h-4 w-4" /> {t("common.back")}
             </button>
             {last ? (
               <button onClick={submit} disabled={!answers[q.id] || submitting} className="btn-primary">
-                {submitting ? <Spinner size={16} /> : <><span>Submit test</span><ArrowRight className="h-4 w-4" /></>}
+                {submitting ? <Spinner size={16} /> : <><span>{t("auth.submitTest")}</span><ArrowRight className="h-4 w-4" /></>}
               </button>
             ) : (
               <button onClick={() => setIndex((i) => i + 1)} disabled={!answers[q.id]} className="btn-primary">
-                Next <ArrowRight className="h-4 w-4" />
+                {t("common.next")} <ArrowRight className="h-4 w-4" />
               </button>
             )}
           </div>

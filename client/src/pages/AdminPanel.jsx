@@ -6,8 +6,10 @@ import { toast } from "../store/toastStore.js";
 import Spinner from "../components/Spinner.jsx";
 import ErrorState from "../components/ErrorState.jsx";
 import Modal from "../components/Modal.jsx";
+import { useT } from "../i18n/index.js";
 
 export default function AdminPanel() {
+  const t = useT();
   const [tab, setTab] = useState("analytics");
   const [users, setUsers] = useState([]);
   const [analytics, setAnalytics] = useState(null);
@@ -68,7 +70,7 @@ export default function AdminPanel() {
   const toggleBlock = async (id) => {
     try {
       const { data } = await api.post(`/admin/users/${id}/block`);
-      toast.info(data.data.user.blocked ? "User blocked" : "User unblocked");
+      toast.info(data.data.user.blocked ? t("admin.userBlocked") : t("admin.userUnblocked"));
       loadUsers(search);
     } catch (err) {
       toast.error(apiErrorMessage(err));
@@ -79,7 +81,7 @@ export default function AdminPanel() {
     e.preventDefault();
     try {
       await api.post("/admin/languages", langForm);
-      toast.success("Language added");
+      toast.success(t("admin.languageAdded"));
       setLangModal(false);
       setLangForm({ code: "", name: "", flag: "" });
       loadLanguages();
@@ -91,7 +93,7 @@ export default function AdminPanel() {
   const removeLanguage = async (id) => {
     try {
       await api.delete(`/admin/languages/${id}`);
-      toast.info("Language deleted");
+      toast.info(t("admin.languageDeleted"));
       loadLanguages();
     } catch (err) {
       toast.error(apiErrorMessage(err));
@@ -99,17 +101,17 @@ export default function AdminPanel() {
   };
 
   const tabs = [
-    { id: "analytics", label: "Analytics", icon: BarChart3 },
-    { id: "users", label: "Users", icon: Users },
-    { id: "languages", label: "Languages", icon: LanguagesIcon },
+    { id: "analytics", label: t("admin.analytics"), icon: BarChart3 },
+    { id: "users", label: t("admin.users"), icon: Users },
+    { id: "languages", label: t("admin.languages"), icon: LanguagesIcon },
   ];
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold"><ShieldCheck className="h-6 w-6 text-brand-500" /> Admin Panel</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Platform management and analytics.</p>
+          <h1 className="flex items-center gap-2 text-2xl font-bold"><ShieldCheck className="h-6 w-6 text-brand-500" /> {t("admin.title")}</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t("admin.sub")}</p>
         </div>
         <div className="flex gap-2">
           {tabs.map((t) => (
@@ -125,30 +127,30 @@ export default function AdminPanel() {
       ) : tab === "analytics" && analytics ? (
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <AdminStat label="Total users" value={analytics.totalUsers} />
-            <AdminStat label="Active users (7d)" value={analytics.activeUsers} />
-            <AdminStat label="AI analyses" value={analytics.totalAnalyses} />
-            <AdminStat label="Exercises" value={analytics.totalExercises} />
-            <AdminStat label="Mistakes stored" value={analytics.totalMistakes} />
-            <AdminStat label="Chat messages" value={analytics.totalChats} />
-            <AdminStat label="Speaking sessions" value={analytics.totalSpeaking} />
-            <AdminStat label="Attempts" value={analytics.totalAttempts} />
+            <AdminStat label={t("admin.statUsers")} value={analytics.totalUsers} />
+            <AdminStat label={t("admin.statActive")} value={analytics.activeUsers} />
+            <AdminStat label={t("admin.statAnalyses")} value={analytics.totalAnalyses} />
+            <AdminStat label={t("admin.statExercises")} value={analytics.totalExercises} />
+            <AdminStat label={t("admin.statMistakes")} value={analytics.totalMistakes} />
+            <AdminStat label={t("admin.statChats")} value={analytics.totalChats} />
+            <AdminStat label={t("admin.statSpeaking")} value={analytics.totalSpeaking} />
+            <AdminStat label={t("admin.statAttempts")} value={analytics.totalAttempts} />
           </div>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <div className="card">
-              <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Popular learning languages</h3>
+              <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t("admin.popularLanguages")}</h3>
               <div className="space-y-2">
                 {analytics.popularLanguages.map((l) => (
                   <div key={l.language} className="flex items-center gap-3 text-sm">
                     <span className="flex-1 font-medium">{l.language}</span>
-                    <span className="badge-indigo">{l.count} users</span>
+                    <span className="badge-indigo">{l.count} {t("admin.users")}</span>
                   </div>
                 ))}
               </div>
             </div>
             <div className="card">
-              <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Most common mistakes</h3>
+              <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t("mist.mostCommon")}</h3>
               <div className="space-y-2">
                 {analytics.commonMistakes.map((m, i) => (
                   <div key={m.topic} className="flex items-center gap-3 text-sm">
@@ -167,7 +169,7 @@ export default function AdminPanel() {
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
             <input
               className="input pl-10"
-              placeholder="Search by name or email…"
+              placeholder={t("admin.searchPh")}
               value={search}
               onChange={(e) => { setSearch(e.target.value); loadUsers(e.target.value); }}
             />
@@ -176,14 +178,14 @@ export default function AdminPanel() {
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                 <tr>
-                  <th className="px-4 py-3">User</th>
-                  <th className="px-4 py-3">Level</th>
+                  <th className="px-4 py-3">{t("admin.thUser")}</th>
+                  <th className="px-4 py-3">{t("common.level")}</th>
                   <th className="px-4 py-3">XP</th>
-                  <th className="px-4 py-3">Mistakes</th>
-                  <th className="px-4 py-3">Analyses</th>
-                  <th className="px-4 py-3">Role</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Action</th>
+                  <th className="px-4 py-3">{t("mist.total")}</th>
+                  <th className="px-4 py-3">{t("dash.analyses")}</th>
+                  <th className="px-4 py-3">{t("admin.thRole")}</th>
+                  <th className="px-4 py-3">{t("admin.thStatus")}</th>
+                  <th className="px-4 py-3">{t("admin.thAction")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -199,12 +201,12 @@ export default function AdminPanel() {
                     <td className="px-4 py-3">{u._count.writingSubmissions}</td>
                     <td className="px-4 py-3"><span className={`badge ${u.role === "ADMIN" ? "badge-indigo" : "badge-slate"}`}>{u.role}</span></td>
                     <td className="px-4 py-3">
-                      {u.blocked ? <span className="badge-red">blocked</span> : <span className="badge-green">active</span>}
+                      {u.blocked ? <span className="badge-red">{t("admin.blocked")}</span> : <span className="badge-green">{t("admin.active")}</span>}
                     </td>
                     <td className="px-4 py-3">
                       {u.role !== "ADMIN" && (
                         <button onClick={() => toggleBlock(u.id)} className="btn-outline px-3 py-1.5 text-xs">
-                          {u.blocked ? <><CheckCircle2 className="h-3.5 w-3.5" /> Unblock</> : <><Ban className="h-3.5 w-3.5" /> Block</>}
+                          {u.blocked ? <><CheckCircle2 className="h-3.5 w-3.5" /> {t("admin.unblock")}</> : <><Ban className="h-3.5 w-3.5" /> {t("admin.block")}</>}
                         </button>
                       )}
                     </td>
@@ -216,7 +218,7 @@ export default function AdminPanel() {
         </div>
       ) : tab === "languages" ? (
         <div className="space-y-4">
-          <button onClick={() => setLangModal(true)} className="btn-primary"><LanguagesIcon className="h-4 w-4" /> Add language</button>
+          <button onClick={() => setLangModal(true)} className="btn-primary"><LanguagesIcon className="h-4 w-4" /> {t("admin.addLanguage")}</button>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {languages.map((l) => (
               <div key={l.id} className="card flex items-center gap-3">
@@ -225,28 +227,28 @@ export default function AdminPanel() {
                   <p className="font-semibold">{l.name}</p>
                   <p className="text-xs text-slate-400">{l.code}</p>
                 </div>
-                <button onClick={() => removeLanguage(l.id)} className="btn-outline px-3 py-1.5 text-xs text-red-500 hover:border-red-400">Delete</button>
+                <button onClick={() => removeLanguage(l.id)} className="btn-outline px-3 py-1.5 text-xs text-red-500 hover:border-red-400">{t("common.delete")}</button>
               </div>
             ))}
           </div>
         </div>
       ) : null}
 
-      <Modal open={langModal} onClose={() => setLangModal(false)} title="Add language">
+      <Modal open={langModal} onClose={() => setLangModal(false)} title={t("admin.addLanguage")}>
         <form onSubmit={addLanguage} className="space-y-4">
           <div>
             <label className="label">Code</label>
             <input className="input" placeholder="e.g. it" value={langForm.code} onChange={(e) => setLangForm({ ...langForm, code: e.target.value })} required />
           </div>
           <div>
-            <label className="label">Name</label>
+            <label className="label">{t("auth.name")}</label>
             <input className="input" placeholder="e.g. Italian" value={langForm.name} onChange={(e) => setLangForm({ ...langForm, name: e.target.value })} required />
           </div>
           <div>
-            <label className="label">Flag emoji</label>
+            <label className="label">{t("admin.flagEmoji")}</label>
             <input className="input" placeholder="🇮🇹" value={langForm.flag} onChange={(e) => setLangForm({ ...langForm, flag: e.target.value })} />
           </div>
-          <button type="submit" className="btn-primary w-full">Add language</button>
+          <button type="submit" className="btn-primary w-full">{t("admin.addLanguage")}</button>
         </form>
       </Modal>
     </div>

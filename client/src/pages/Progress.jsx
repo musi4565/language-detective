@@ -4,8 +4,10 @@ import api from "../api/client.js";
 import { apiErrorMessage } from "../api/client.js";
 import Spinner from "../components/Spinner.jsx";
 import ErrorState from "../components/ErrorState.jsx";
+import { useT } from "../i18n/index.js";
 
 export default function Progress() {
+  const t = useT();
   const [data, setData] = useState(null);
   const [skills, setSkills] = useState(null);
   const [error, setError] = useState("");
@@ -38,29 +40,29 @@ export default function Progress() {
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   const stats = [
-    { label: "Total XP", value: s.totalXp, icon: Zap, color: "text-amber-500 bg-amber-500/10" },
-    { label: "Current streak", value: `${s.streak} days`, icon: Flame, color: "text-orange-500 bg-orange-500/10" },
-    { label: "Writing analyses", value: s.writingAnalyses, icon: PenLine, color: "text-brand-500 bg-brand-500/10" },
-    { label: "Speaking sessions", value: s.speakingSessions, icon: Mic, color: "text-violet-500 bg-violet-500/10" },
-    { label: "Exercises completed", value: s.exercisesCompleted, icon: Dumbbell, color: "text-emerald-500 bg-emerald-500/10" },
-    { label: "Mistakes corrected", value: s.mistakesCorrected, icon: CheckCircle2, color: "text-green-500 bg-green-500/10" },
-    { label: "Vocabulary learned", value: s.vocabularyLearned, icon: BookOpen, color: "text-sky-500 bg-sky-500/10" },
-    { label: "Total mistakes", value: s.mistakesTotal, icon: AlertTriangle, color: "text-red-500 bg-red-500/10" },
+    { label: t("prog.totalXp"), value: s.totalXp, icon: Zap, color: "text-amber-500 bg-amber-500/10" },
+    { label: t("prog.streak"), value: `${s.streak} ${t("prog.days")}`, icon: Flame, color: "text-orange-500 bg-orange-500/10" },
+    { label: t("prog.writingAnalyses"), value: s.writingAnalyses, icon: PenLine, color: "text-brand-500 bg-brand-500/10" },
+    { label: t("prog.speakingSessions"), value: s.speakingSessions, icon: Mic, color: "text-violet-500 bg-violet-500/10" },
+    { label: t("prog.exercisesCompleted"), value: s.exercisesCompleted, icon: Dumbbell, color: "text-emerald-500 bg-emerald-500/10" },
+    { label: t("prog.mistakesCorrected"), value: s.mistakesCorrected, icon: CheckCircle2, color: "text-green-500 bg-green-500/10" },
+    { label: t("prog.vocabularyLearned"), value: s.vocabularyLearned, icon: BookOpen, color: "text-sky-500 bg-sky-500/10" },
+    { label: t("prog.mistakesTotal"), value: s.mistakesTotal, icon: AlertTriangle, color: "text-red-500 bg-red-500/10" },
   ];
 
   const skillRows = skills
     ? [
-        { label: "Writing", value: skills.writing, color: "bg-brand-500" },
-        { label: "Speaking", value: skills.speaking, color: "bg-violet-500" },
-        { label: "Practice accuracy", value: skills.practice, color: "bg-emerald-500" },
+        { label: t("dash.writing"), value: skills.writing, color: "bg-brand-500" },
+        { label: t("dash.speaking"), value: skills.speaking, color: "bg-violet-500" },
+        { label: t("prog.practiceAccuracy"), value: skills.practice, color: "bg-emerald-500" },
       ]
     : [];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Your Progress</h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Level {s.level} · Track how you're improving over time.</p>
+        <h1 className="text-2xl font-bold">{t("prog.title")}</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t("prog.sub", { level: s.level })}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -78,7 +80,7 @@ export default function Progress() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="card">
           <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            <TrendingUp className="h-4 w-4" /> Weekly activity (XP)
+            <TrendingUp className="h-4 w-4" /> {t("prog.weekly")}
           </h3>
           <div className="flex h-40 items-end gap-2">
             {weekly.map((d) => (
@@ -95,7 +97,7 @@ export default function Progress() {
         </div>
 
         <div className="card">
-          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Skill progress</h3>
+          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t("prog.skillProgress")}</h3>
           <div className="space-y-4">
             {skillRows.map((sk) => (
               <div key={sk.label}>
@@ -113,9 +115,9 @@ export default function Progress() {
       </div>
 
       <div className="card">
-        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Mistake reduction (per week)</h3>
+        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t("prog.mistakeReduction")}</h3>
         {Object.keys(data.mistakeTrend || {}).length === 0 ? (
-          <p className="text-sm text-slate-500 dark:text-slate-400">No mistake data yet.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{t("prog.noMistakeData")}</p>
         ) : (
           <div className="flex h-32 items-end gap-2">
             {Object.entries(data.mistakeTrend).map(([date, count]) => (

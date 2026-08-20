@@ -21,9 +21,11 @@ import Spinner from "../components/Spinner.jsx";
 import ErrorState from "../components/ErrorState.jsx";
 import ScoreRing from "../components/ScoreRing.jsx";
 import EmptyState from "../components/EmptyState.jsx";
+import { useT } from "../i18n/index.js";
 
 export default function Dashboard() {
   const { user } = useAuthStore();
+  const t = useT();
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -43,14 +45,14 @@ export default function Dashboard() {
   if (error) return <ErrorState message={error} onRetry={load} />;
 
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const greeting = hour < 12 ? t("dash.goodMorning") : hour < 18 ? t("dash.goodAfternoon") : t("dash.goodEvening");
   const today = data.todayProgress || { xpEarned: 0, writingAnalyses: 0, exercisesCompleted: 0, speakingSessions: 0 };
 
   const cards = [
-    { label: "XP today", value: today.xpEarned, icon: Zap, color: "text-amber-500 bg-amber-500/10" },
-    { label: "Analyses", value: today.writingAnalyses, icon: PenLine, color: "text-brand-500 bg-brand-500/10" },
-    { label: "Exercises", value: today.exercisesCompleted, icon: Dumbbell, color: "text-emerald-500 bg-emerald-500/10" },
-    { label: "Speaking", value: today.speakingSessions, icon: Mic, color: "text-violet-500 bg-violet-500/10" },
+    { label: t("dash.xpToday"), value: today.xpEarned, icon: Zap, color: "text-amber-500 bg-amber-500/10" },
+    { label: t("dash.analyses"), value: today.writingAnalyses, icon: PenLine, color: "text-brand-500 bg-brand-500/10" },
+    { label: t("dash.exercises"), value: today.exercisesCompleted, icon: Dumbbell, color: "text-emerald-500 bg-emerald-500/10" },
+    { label: t("dash.speaking"), value: today.speakingSessions, icon: Mic, color: "text-violet-500 bg-violet-500/10" },
   ];
 
   return (
@@ -61,11 +63,11 @@ export default function Dashboard() {
             {greeting}, {user.name.split(" ")[0]} 👋
           </h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Your personal language detective is on the case.
+            {t("dash.subtitle")}
           </p>
         </div>
         <div className="flex gap-3">
-          <span className="badge-amber"><Flame className="h-3.5 w-3.5" /> {user.streak} day streak</span>
+          <span className="badge-amber"><Flame className="h-3.5 w-3.5" /> {user.streak} {t("common.dayStreak")}</span>
           <span className="badge-indigo"><Zap className="h-3.5 w-3.5" /> {user.xp} XP</span>
         </div>
       </div>
@@ -87,35 +89,35 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <div className="card">
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Skill scores</h3>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t("dash.skillScores")}</h3>
             <div className="flex flex-wrap items-center justify-around gap-4">
               <div className="text-center">
-                <ScoreRing value={data.stats.writingAvgScore ?? 0} label="Writing" />
-                <p className="mt-1 text-xs text-slate-400">{data.stats.writingAnalyses} analyses</p>
+                <ScoreRing value={data.stats.writingAvgScore ?? 0} label={t("dash.writing")} />
+                <p className="mt-1 text-xs text-slate-400">{data.stats.writingAnalyses} {t("common.analyses")}</p>
               </div>
               <div className="text-center">
-                <ScoreRing value={data.stats.practiceAccuracy ?? 0} label="Practice" />
-                <p className="mt-1 text-xs text-slate-400">{data.stats.exercisesCompleted} done</p>
+                <ScoreRing value={data.stats.practiceAccuracy ?? 0} label={t("dash.practice")} />
+                <p className="mt-1 text-xs text-slate-400">{data.stats.exercisesCompleted} {t("common.done")}</p>
               </div>
               <div className="text-center">
-                <ScoreRing value={data.stats.speakingAvgScore ?? 0} label="Speaking" />
-                <p className="mt-1 text-xs text-slate-400">{data.stats.speakingSessionsCount || 0} sessions</p>
+                <ScoreRing value={data.stats.speakingAvgScore ?? 0} label={t("dash.speaking")} />
+                <p className="mt-1 text-xs text-slate-400">{data.stats.speakingSessionsCount || 0} {t("common.sessions")}</p>
               </div>
             </div>
           </div>
 
           <div className="card">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Due for review</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t("dash.dueForReview")}</h3>
               <Link to="/app/mistakes" className="text-sm font-medium text-brand-600 hover:underline dark:text-brand-400">
-                View all <ArrowRight className="inline h-3.5 w-3.5" />
+                {t("dash.viewAll")} <ArrowRight className="inline h-3.5 w-3.5" />
               </Link>
             </div>
             {data.recentMistakes.length === 0 ? (
               <EmptyState
-                title="No mistakes yet"
-                description="Write something in the Writing Detective to find your first mistakes."
-                cta="Start writing"
+                title={t("dash.noMistakesTitle")}
+                description={t("dash.noMistakesDesc")}
+                cta={t("dash.startWriting")}
                 icon={PenLine}
                 onCta={() => (window.location.href = "/app/writing")}
               />
@@ -131,7 +133,7 @@ export default function Dashboard() {
                       </p>
                       <p className="text-xs text-slate-400">{m.category}{m.topic ? ` · ${m.topic}` : ""} · {m.severity}</p>
                     </div>
-                    <Link to="/app/mistakes" className="ml-2 shrink-0 text-brand-600 hover:underline dark:text-brand-400 text-xs font-semibold">Review</Link>
+                    <Link to="/app/mistakes" className="ml-2 shrink-0 text-brand-600 hover:underline dark:text-brand-400 text-xs font-semibold">{t("dash.review")}</Link>
                   </div>
                 ))}
               </div>
@@ -139,9 +141,9 @@ export default function Dashboard() {
           </div>
 
           <div className="card">
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Weakest topics</h3>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t("dash.weakestTopics")}</h3>
             {data.weakestTopics.length === 0 ? (
-              <p className="text-sm text-slate-500 dark:text-slate-400">Practice will appear here as you make mistakes.</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">{t("dash.weakestEmpty")}</p>
             ) : (
               <div className="space-y-3">
                 {data.weakestTopics.map((t) => (
@@ -163,20 +165,20 @@ export default function Dashboard() {
         <div className="space-y-6">
           <DailyChallengeCard />
           <div className="card">
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Recommended</h3>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t("dash.recommended")}</h3>
             <div className="space-y-2">
-              <RecommendRow to="/app/writing" icon={PenLine} title="Writing Detective" desc="Find mistakes in your writing" />
-              <RecommendRow to="/app/practice" icon={Dumbbell} title="Personalized practice" desc={data.dueForReview > 0 ? `${data.dueForReview} mistakes due` : "Practice your weak topics"} />
-              <RecommendRow to="/app/chat" icon={MessageSquare} title="AI conversation" desc="Practice naturally with AI" />
-              <RecommendRow to="/app/vocabulary" icon={BookOpen} title="Vocabulary" desc={data.vocabDue > 0 ? `${data.vocabDue} words to review` : "Add new words"} />
+              <RecommendRow to="/app/writing" icon={PenLine} title={t("nav.writing")} desc={t("dash.recoWriting")} />
+              <RecommendRow to="/app/practice" icon={Dumbbell} title={t("dash.recoPractice")} desc={data.dueForReview > 0 ? `${data.dueForReview} ${t("common.mistakesDue")}` : t("prac.sub")} />
+              <RecommendRow to="/app/chat" icon={MessageSquare} title={t("dash.recoChat")} desc={t("dash.recoChatDesc")} />
+              <RecommendRow to="/app/vocabulary" icon={BookOpen} title={t("dash.recoVocab")} desc={data.vocabDue > 0 ? `${data.vocabDue} ${t("common.wordsToReview")}` : t("common.addNewWords")} />
             </div>
           </div>
 
           <div className="card">
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Achievements</h3>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t("dash.achievements")}</h3>
             <div className="flex flex-wrap gap-2">
               {data.achievements.length === 0 ? (
-                <p className="text-sm text-slate-500 dark:text-slate-400">Complete activities to earn achievements.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{t("dash.achEmpty")}</p>
               ) : (
                 data.achievements.map((a) => (
                   <span key={a.id} className="badge-green" title={a.description}>{a.title}</span>
@@ -184,7 +186,7 @@ export default function Dashboard() {
               )}
             </div>
             <Link to="/app/achievements" className="mt-3 inline-block text-sm font-medium text-brand-600 hover:underline dark:text-brand-400">
-              View all achievements →
+              {t("dash.viewAllAch")}
             </Link>
           </div>
         </div>
@@ -194,6 +196,7 @@ export default function Dashboard() {
 }
 
 function DailyChallengeCard() {
+  const t = useT();
   const [challenge, setChallenge] = useState(null);
   const [answer, setAnswer] = useState("");
   const [feedback, setFeedback] = useState(null);
@@ -226,23 +229,21 @@ function DailyChallengeCard() {
     <div className="card border-brand-500/40 bg-gradient-to-br from-brand-600 to-violet-700 text-white">
       <div className="flex items-center gap-2">
         <Target className="h-5 w-5" />
-        <h3 className="font-semibold">Daily Challenge</h3>
+        <h3 className="font-semibold">{t("dash.dailyChallenge")}</h3>
         {challenge?.attempt && !feedback && (
-          <span className="ml-auto text-xs text-white/70">{challenge.attempt.isCorrect ? "✓ completed" : "attempted"}</span>
+          <span className="ml-auto text-xs text-white/70">{challenge.attempt.isCorrect ? t("dash.completed") : t("dash.attempted")}</span>
         )}
       </div>
       {loading ? (
         <div className="mt-4 flex justify-center text-white/70"><Spinner size={20} /></div>
-      ) : challenge?.correctAnswer ? (
-        <p className="mt-2 text-sm text-white/80">{challenge.prompt}</p>
       ) : (
-        <p className="mt-2 text-sm text-white/80">{challenge.prompt}</p>
+        <p className="mt-2 text-sm text-white/80">{challenge?.prompt}</p>
       )}
       {!feedback ? (
         <form onSubmit={submit} className="mt-4 flex gap-2">
           <input
             className="flex-1 rounded-xl border border-white/20 bg-white/15 px-3 py-2 text-sm text-white placeholder-white/50 focus:border-white/40 focus:outline-none"
-            placeholder="Your corrected sentence…"
+            placeholder={t("dash.placeholder")}
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
             disabled={!!challenge?.attempt}
@@ -254,7 +255,7 @@ function DailyChallengeCard() {
       ) : (
         <div className="mt-4">
           <p className={`text-sm font-semibold ${feedback.isCorrect ? "text-emerald-300" : "text-red-300"}`}>
-            {feedback.isCorrect ? `Correct! +${feedback.xpEarned} XP` : `Not quite — correct answer: "${feedback.correctAnswer}"`}
+            {feedback.isCorrect ? t("dash.correctAnswer", { xp: feedback.xpEarned }) : t("dash.wrongAnswer", { answer: feedback.correctAnswer })}
           </p>
           {feedback.explanation && <p className="mt-1 text-xs text-white/70">{feedback.explanation}</p>}
         </div>

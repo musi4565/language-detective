@@ -6,11 +6,13 @@ import { toast } from "../store/toastStore.js";
 import Spinner from "../components/Spinner.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 import ErrorState from "../components/ErrorState.jsx";
+import { useT } from "../i18n/index.js";
 
 const CATEGORIES = ["ALL", "GRAMMAR", "VOCABULARY", "SPELLING", "WORD_ORDER", "TENSE", "PREPOSITION", "ARTICLE", "SENTENCE_STRUCTURE", "PRONUNCIATION"];
 const SEVERITIES = ["ALL", "low", "medium", "high"];
 
 export default function Mistakes() {
+  const t = useT();
   const [items, setItems] = useState([]);
   const [stats, setStats] = useState(null);
   const [filter, setFilter] = useState("ALL");
@@ -45,7 +47,7 @@ export default function Mistakes() {
     setReviewingId(id);
     try {
       const { data } = await api.post(`/mistakes/${id}/review`, { isCorrect });
-      toast.success(isCorrect ? `Correct! +${data.data.xpEarned} XP` : "Noted. You'll review this again soon.");
+      toast.success(isCorrect ? t("mist.correctToast", { xp: data.data.xpEarned }) : t("mist.wrongToast"));
       load();
     } catch (err) {
       toast.error(apiErrorMessage(err));
@@ -59,24 +61,24 @@ export default function Mistakes() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Mistake Database</h1>
+        <h1 className="text-2xl font-bold">{t("mist.title")}</h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Every mistake you make is stored here and re-tested with spaced repetition.
+          {t("mist.sub")}
         </p>
       </div>
 
       {stats && (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatCard label="Total mistakes" value={stats.total} />
-          <StatCard label="Mastered (80%+)" value={stats.mastered} />
-          <StatCard label="Due for review" value={stats.due} />
-          <StatCard label="Avg mastery" value={`${stats.averageMastery}%`} />
+          <StatCard label={t("mist.total")} value={stats.total} />
+          <StatCard label={t("mist.mastered")} value={stats.mastered} />
+          <StatCard label={t("mist.due")} value={stats.due} />
+          <StatCard label={t("mist.avgMastery")} value={`${stats.averageMastery}%`} />
         </div>
       )}
 
       <div className="card">
         <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-          <Filter className="h-4 w-4" /> Mistakes by category
+          <Filter className="h-4 w-4" /> {t("mist.byCategory")}
         </h3>
         {stats && Object.keys(stats.byCategory).length > 0 ? (
           <div className="flex flex-wrap gap-3">
@@ -93,7 +95,7 @@ export default function Mistakes() {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-slate-500 dark:text-slate-400">No mistakes yet.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{t("mist.noMistakesYet")}</p>
         )}
       </div>
 
@@ -122,7 +124,7 @@ export default function Mistakes() {
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300"
             }`}
           >
-            {s === "ALL" ? "All severities" : s}
+            {s === "ALL" ? t("mist.allSeverities") : s}
           </button>
         ))}
       </div>
@@ -133,9 +135,9 @@ export default function Mistakes() {
         <div className="flex justify-center py-16 text-brand-600"><Spinner size={28} /></div>
       ) : items.length === 0 ? (
         <EmptyState
-          title="No mistakes found"
-          description={filter !== "ALL" ? "No mistakes in this category yet." : "Write a text in the Writing Detective to start collecting your mistakes."}
-          cta={filter !== "ALL" ? undefined : "Write a text"}
+          title={t("mist.noMistakesFound")}
+          description={filter !== "ALL" ? t("mist.noInCategory") : t("mist.emptyDesc")}
+          cta={filter !== "ALL" ? undefined : t("mist.writeText")}
           icon={AlertTriangle}
           onCta={filter === "ALL" ? () => (window.location.href = "/app/writing") : undefined}
         />
@@ -150,7 +152,7 @@ export default function Mistakes() {
                   <span className="badge-slate">{m.severity}</span>
                   {m.topic && <span className="badge-indigo">{m.topic}</span>}
                   <span className="badge-slate">{m.source}</span>
-                  {due && <span className="badge-amber"><Clock className="h-3 w-3" /> due now</span>}
+                  {due && <span className="badge-amber"><Clock className="h-3 w-3" /> {t("common.dueNow")}</span>}
                 </div>
 
                 <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
@@ -162,10 +164,10 @@ export default function Mistakes() {
 
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3 dark:border-slate-700">
                   <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
-                    <span>Mastery: <b className={m.masteryScore >= 80 ? "text-emerald-500" : m.masteryScore >= 50 ? "text-amber-500" : "text-red-500"}>{m.masteryScore}%</b></span>
-                    <span>Reviewed {m.reviewCount}×</span>
-                    <span>Correct {m.correctCount} · Incorrect {m.incorrectCount}</span>
-                    <span>Last review: {m.lastReviewedAt ? new Date(m.lastReviewedAt).toLocaleDateString() : "never"}</span>
+                    <span>{t("common.mastery")}: <b className={m.masteryScore >= 80 ? "text-emerald-500" : m.masteryScore >= 50 ? "text-amber-500" : "text-red-500"}>{m.masteryScore}%</b></span>
+                    <span>{t("common.reviewed")} {m.reviewCount}×</span>
+                    <span>{t("common.correct")} {m.correctCount} · {t("common.incorrect")} {m.incorrectCount}</span>
+                    <span>{t("common.lastReview")}: {m.lastReviewedAt ? new Date(m.lastReviewedAt).toLocaleDateString() : t("common.never")}</span>
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -173,14 +175,14 @@ export default function Mistakes() {
                       disabled={reviewingId === m.id}
                       className="btn-secondary px-3 py-1.5 text-xs"
                     >
-                      <ThumbsUp className="h-3.5 w-3.5" /> I knew it
+                      <ThumbsUp className="h-3.5 w-3.5" /> {t("mist.iKnewIt")}
                     </button>
                     <button
                       onClick={() => review(m.id, false)}
                       disabled={reviewingId === m.id}
                       className="btn-outline px-3 py-1.5 text-xs"
                     >
-                      <ThumbsDown className="h-3.5 w-3.5" /> Still wrong
+                      <ThumbsDown className="h-3.5 w-3.5" /> {t("mist.stillWrong")}
                     </button>
                   </div>
                 </div>
@@ -193,7 +195,7 @@ export default function Mistakes() {
       {stats && Object.keys(stats.byCategory).length > 0 && (
         <div className="card">
           <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            <CheckCircle2 className="h-4 w-4" /> Most common mistakes
+            <CheckCircle2 className="h-4 w-4" /> {t("mist.mostCommon")}
           </h3>
           <div className="space-y-2">
             {stats.mostCommon.slice(0, 5).map((m, i) => (

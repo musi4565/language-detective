@@ -7,8 +7,10 @@ import Spinner from "../components/Spinner.jsx";
 import ErrorState from "../components/ErrorState.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 import ScoreRing from "../components/ScoreRing.jsx";
+import { useT } from "../i18n/index.js";
 
 export default function Speaking() {
+  const t = useT();
   const [transcript, setTranscript] = useState("");
   const [result, setResult] = useState(null);
   const [recording, setRecording] = useState(false);
@@ -23,7 +25,7 @@ export default function Speaking() {
     setResult(null);
     setTranscript("");
     if (!navigator.mediaDevices?.getUserMedia) {
-      setError("Audio recording is not supported in this browser.");
+      setError(t("speak.noSupport"));
       return;
     }
     try {
@@ -32,7 +34,7 @@ export default function Speaking() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
         stream.getTracks().forEach((t) => t.stop());
-        setError("Speech recognition is not supported in this browser. Use Chrome, Edge or Safari.");
+        setError(t("speak.noRecognition"));
         return;
       }
       const rec = new SpeechRecognition();
@@ -49,7 +51,7 @@ export default function Speaking() {
         setRecording(false);
         stream.getTracks().forEach((t) => t.stop());
         if (e.error !== "no-speech" && e.error !== "aborted") {
-          setError(`Speech recognition error: ${e.error}`);
+          setError(t("speak.recError", { error: e.error }));
         }
       };
       rec.onend = () => {
@@ -59,7 +61,7 @@ export default function Speaking() {
       rec.start();
       setRecording(true);
     } catch {
-      setError("Microphone access denied. Check browser permissions.");
+      setError(t("speak.micDenied"));
     }
   };
 
@@ -71,7 +73,7 @@ export default function Speaking() {
 
   const analyze = async () => {
     if (!transcript.trim()) {
-      toast.error("Nothing recorded yet — speak first!");
+      toast.error(t("speak.nothingRecorded"));
       return;
     }
     setAnalyzing(true);
@@ -98,10 +100,10 @@ export default function Speaking() {
 
   const scores = result
     ? [
-        { label: "Pronunciation", value: result.pronunciation ?? result.overallScore },
-        { label: "Grammar", value: result.grammar ?? result.overallScore },
-        { label: "Fluency", value: result.fluency ?? result.overallScore },
-        { label: "Vocabulary", value: result.vocabulary ?? result.overallScore },
+        { label: t("common.pronunciationShort"), value: result.pronunciation ?? result.overallScore },
+        { label: t("common.grammar"), value: result.grammar ?? result.overallScore },
+        { label: t("common.fluency"), value: result.fluency ?? result.overallScore },
+        { label: t("common.vocabulary"), value: result.vocabulary ?? result.overallScore },
       ]
     : [];
 
@@ -109,12 +111,12 @@ export default function Speaking() {
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-bold">Speaking</h1>
+          <h1 className="text-2xl font-bold">{t("speak.title")}</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Speak into the microphone — we transcribe and analyze your speech.
+            {t("speak.sub")}
           </p>
         </div>
-        <button onClick={loadHistory} className="btn-outline"><AudioLines className="h-4 w-4" /> History</button>
+        <button onClick={loadHistory} className="btn-outline"><AudioLines className="h-4 w-4" /> {t("common.history")}</button>
       </div>
 
       {error && <ErrorState message={error} onRetry={() => setError("")} />}
@@ -123,23 +125,23 @@ export default function Speaking() {
         <div className={`flex h-24 w-24 items-center justify-center rounded-full transition-all ${recording ? "animate-pulse bg-red-500/20 text-red-500" : "bg-brand-100 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300"}`}>
           {recording ? <Square className="h-9 w-9" /> : <Mic className="h-9 w-9" />}
         </div>
-        <p className="mt-4 text-sm font-semibold">{recording ? "Listening… speak now" : "Press to start recording"}</p>
-        <p className="mt-1 text-xs text-slate-400">Speak for 15-30 seconds about your day, a hobby, or anything.</p>
+        <p className="mt-4 text-sm font-semibold">{recording ? t("speak.listening") : t("speak.pressToRecord")}</p>
+        <p className="mt-1 text-xs text-slate-400">{t("speak.hint")}</p>
 
         <div className="mt-5 flex gap-3">
           {!recording ? (
-            <button onClick={startRecording} className="btn-primary"><Mic className="h-4 w-4" /> Start recording</button>
+            <button onClick={startRecording} className="btn-primary"><Mic className="h-4 w-4" /> {t("speak.startRecording")}</button>
           ) : (
-            <button onClick={stopRecording} className="btn-danger"><Square className="h-4 w-4" /> Stop</button>
+            <button onClick={stopRecording} className="btn-danger"><Square className="h-4 w-4" /> {t("speak.stop")}</button>
           )}
           <button onClick={analyze} disabled={analyzing || !transcript.trim()} className="btn-secondary">
-            {analyzing ? <><Spinner size={16} /> Analyzing…</> : "Analyze speech"}
+            {analyzing ? <><Spinner size={16} /> {t("speak.analyzing")}</> : t("speak.analyzeSpeech")}
           </button>
         </div>
 
         {transcript && (
           <div className="mt-6 w-full rounded-xl bg-slate-50 p-4 dark:bg-slate-700/40">
-            <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400">Transcript</p>
+            <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400">{t("speak.transcript")}</p>
             <p className="whitespace-pre-wrap text-sm">{transcript}</p>
           </div>
         )}
@@ -149,7 +151,7 @@ export default function Speaking() {
         <div className="space-y-6 animate-fade-in">
           <div className="card flex flex-col items-center gap-6 sm:flex-row sm:justify-around">
             <div className="text-center">
-              <ScoreRing value={result.overallScore} size={110} stroke={9} label="Overall" />
+              <ScoreRing value={result.overallScore} size={110} stroke={9} label={t("common.overall")} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               {scores.map((s) => (
@@ -163,7 +165,7 @@ export default function Speaking() {
 
           {result.feedback && (
             <div className="card">
-              <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">AI feedback</h3>
+              <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t("speak.aiFeedback")}</h3>
               <p className="text-sm text-slate-700 dark:text-slate-200">{result.feedback}</p>
             </div>
           )}
@@ -171,11 +173,11 @@ export default function Speaking() {
       )}
 
       {history && history.length === 0 && (
-        <EmptyState title="No speaking sessions yet" description="Record your first speech to get a score." icon={Mic} onCta={() => setHistory(null)} cta="Start speaking" />
+        <EmptyState title={t("speak.noSessionsTitle")} description={t("speak.noSessionsDesc")} icon={Mic} onCta={() => setHistory(null)} cta={t("speak.startSpeaking")} />
       )}
       {history && history.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-lg font-bold">Past sessions</h2>
+          <h2 className="text-lg font-bold">{t("speak.pastSessions")}</h2>
           {history.map((s) => (
             <div key={s.id} className="card flex items-center gap-4">
               <ScoreRing value={s.overallScore} size={52} stroke={5} />

@@ -16,6 +16,7 @@ import Spinner from "../components/Spinner.jsx";
 import ScoreRing from "../components/ScoreRing.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 import ErrorState from "../components/ErrorState.jsx";
+import { useT } from "../i18n/index.js";
 
 const categoryColor = {
   GRAMMAR: "badge-indigo",
@@ -36,6 +37,7 @@ const severityColor = {
 };
 
 export default function Writing() {
+  const t = useT();
   const [text, setText] = useState("");
   const [result, setResult] = useState(null);
   const [history, setHistory] = useState(null);
@@ -47,7 +49,7 @@ export default function Writing() {
 
   const analyze = async () => {
     if (text.trim().length < 3) {
-      toast.error("Please write at least a few words");
+      toast.error(t("writing.minLength"));
       return;
     }
     setLoading(true);
@@ -56,9 +58,9 @@ export default function Writing() {
       const { data } = await api.post("/writing/analyze", { text });
       setResult(data.data);
       setView("result");
-      if (data.data.analysis.overallScore >= 90) toast.success("Excellent writing!");
+      if (data.data.analysis.overallScore >= 90) toast.success(t("writing.excellent"));
     } catch (err) {
-      setError(apiErrorMessage(err, "Analysis failed. Check that the AI is configured."));
+      setError(apiErrorMessage(err, t("writing.analysisFailed")));
     } finally {
       setLoading(false);
     }
@@ -105,8 +107,8 @@ export default function Writing() {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <button onClick={() => setView("new")} className="btn-outline"><ArrowLeft className="h-4 w-4" /> New analysis</button>
-          <h1 className="text-xl font-bold">Analysis history</h1>
+          <button onClick={() => setView("new")} className="btn-outline"><ArrowLeft className="h-4 w-4" /> {t("writing.newAnalysis")}</button>
+          <h1 className="text-xl font-bold">{t("writing.historyTitle")}</h1>
         </div>
 
         {view === "detail" && result && (
@@ -121,7 +123,7 @@ export default function Writing() {
         {view === "history" && (historyLoading ? (
           <div className="flex justify-center py-16 text-brand-600"><Spinner size={28} /></div>
         ) : history.total === 0 ? (
-          <EmptyState title="No analyses yet" description="Write a text and analyze it to build your history." cta="Analyze a text" icon={PenLine} onCta={() => setView("new")} />
+          <EmptyState title={t("writing.noHistoryTitle")} description={t("writing.noHistoryDesc")} cta={t("writing.analyzeText")} icon={PenLine} onCta={() => setView("new")} />
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {history.items.map((h) => (
@@ -146,13 +148,13 @@ export default function Writing() {
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-bold">Writing Detective</h1>
+          <h1 className="text-2xl font-bold">{t("writing.title")}</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Write in English. The AI finds your mistakes and explains every one.
+            {t("writing.sub")}
           </p>
         </div>
         <button onClick={loadHistory} disabled={historyLoading} className="btn-outline">
-          <History className="h-4 w-4" /> History
+          <History className="h-4 w-4" /> {t("common.history")}
         </button>
       </div>
 
@@ -165,17 +167,17 @@ export default function Writing() {
         />
       ) : (
         <div className="card">
-          <label className="label">Your text</label>
+          <label className="label">{t("writing.yourText")}</label>
           <textarea
             className="input min-h-40 resize-y font-normal"
-            placeholder={`Write something in English...\n\nExample:\n"Yesterday I go to school and meet my friend."`}
+            placeholder={t("writing.placeholder")}
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
           <div className="mt-3 flex items-center justify-between">
-            <span className="text-xs text-slate-400">{text.length}/5000 characters</span>
+            <span className="text-xs text-slate-400">{text.length}/5000 {t("writing.characters")}</span>
             <button onClick={analyze} disabled={loading} className="btn-primary">
-              {loading ? <><Spinner size={16} /> Analyzing…</> : <><Search className="h-4 w-4" /> Analyze</>}
+              {loading ? <><Spinner size={16} /> {t("writing.analyzing")}</> : <><Search className="h-4 w-4" /> {t("writing.analyze")}</>}
             </button>
           </div>
           {error && <div className="mt-4"><ErrorState message={error} onRetry={analyze} /></div>}
@@ -186,6 +188,7 @@ export default function Writing() {
 }
 
 function ResultView({ result, onBack, onNew, historyMode, renderHighlighted }) {
+  const t = useT();
   const a = result.analysis;
   const mistakes = result.mistakes || [];
   const score = a.overallScore ?? 0;
@@ -194,33 +197,33 @@ function ResultView({ result, onBack, onNew, historyMode, renderHighlighted }) {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div className="flex items-center gap-4">
-          <ScoreRing value={score} size={84} stroke={8} label="Score" />
+          <ScoreRing value={score} size={84} stroke={8} label={t("common.score")} />
           <div>
-            <h2 className="text-lg font-bold">{score >= 80 ? "Great work!" : score >= 60 ? "Good effort!" : "Keep going!"}</h2>
+            <h2 className="text-lg font-bold">{score >= 80 ? t("writing.greatWork") : score >= 60 ? t("writing.goodEffort") : t("writing.keepGoing")}</h2>
             <p className="max-w-md text-sm text-slate-500 dark:text-slate-400">{a.summary}</p>
           </div>
         </div>
         <div className="flex gap-2">
-          {onBack && <button onClick={onBack} className="btn-outline">Back</button>}
-          {onNew && <button onClick={onNew} className="btn-primary"><PenLine className="h-4 w-4" /> New text</button>}
+          {onBack && <button onClick={onBack} className="btn-outline">{t("common.back")}</button>}
+          {onNew && <button onClick={onNew} className="btn-primary"><PenLine className="h-4 w-4" /> {t("writing.newText")}</button>}
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="card">
-          <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Corrected text</h3>
+          <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t("writing.correctedText")}</h3>
           {renderHighlighted ? renderHighlighted() : (
             <p className="whitespace-pre-wrap text-slate-700 dark:text-slate-200">{a.correctedText}</p>
           )}
         </div>
 
         <div className="card">
-          <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Mistakes detected ({mistakes.length})</h3>
+          <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t("writing.mistakesDetected", { count: mistakes.length })}</h3>
           {mistakes.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-8 text-center">
               <CheckCircle2 className="h-10 w-10 text-emerald-500" />
-              <p className="font-medium">No mistakes found!</p>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Your writing is clean. Try a harder text.</p>
+              <p className="font-medium">{t("writing.noMistakes")}</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">{t("writing.noMistakesDesc")}</p>
             </div>
           ) : (
             <div className="max-h-96 space-y-3 overflow-y-auto pr-1">
@@ -247,10 +250,10 @@ function ResultView({ result, onBack, onNew, historyMode, renderHighlighted }) {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="card">
           <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
-            <Sparkles className="h-4 w-4" /> Strengths
+            <Sparkles className="h-4 w-4" /> {t("writing.strengths")}
           </h3>
           {a.strengths.length === 0 ? (
-            <p className="text-sm text-slate-500 dark:text-slate-400">None detected yet.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{t("writing.noneDetected")}</p>
           ) : (
             <ul className="space-y-1.5 text-sm">
               {a.strengths.map((s, i) => <li key={i} className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />{s}</li>)}
@@ -259,10 +262,10 @@ function ResultView({ result, onBack, onNew, historyMode, renderHighlighted }) {
         </div>
         <div className="card">
           <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">
-            <AlertTriangle className="h-4 w-4" /> Areas to improve
+            <AlertTriangle className="h-4 w-4" /> {t("writing.areasToImprove")}
           </h3>
           {a.weaknesses.length === 0 ? (
-            <p className="text-sm text-slate-500 dark:text-slate-400">Looking great!</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{t("writing.lookingGreat")}</p>
           ) : (
             <ul className="space-y-1.5 text-sm">
               {a.weaknesses.map((w, i) => <li key={i} className="flex items-center gap-2"><AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" />{w}</li>)}
@@ -273,17 +276,17 @@ function ResultView({ result, onBack, onNew, historyMode, renderHighlighted }) {
 
       {a.recommendedTopics?.length > 0 && !historyMode && (
         <div className="card">
-          <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Recommended practice</h3>
+          <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t("writing.recommendedPractice")}</h3>
           <div className="flex flex-wrap gap-2">
             {a.recommendedTopics.map((t) => (
               <span key={t} className="badge-indigo">{t}</span>
             ))}
           </div>
-          <Link to="/app/practice" className="btn-primary mt-3">Practice these topics</Link>
+          <Link to="/app/practice" className="btn-primary mt-3">{t("writing.practiceTopics")}</Link>
         </div>
       )}
 
-      <p className="text-center text-xs text-slate-400">+10 XP awarded · Mistakes saved to your database</p>
+      <p className="text-center text-xs text-slate-400">{t("writing.xpNote")}</p>
     </div>
   );
 }

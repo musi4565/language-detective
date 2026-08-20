@@ -16,16 +16,19 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore.js";
 import { useThemeStore } from "../store/themeStore.js";
+import { useT } from "../i18n/index.js";
+import LanguageSwitcher from "../components/LanguageSwitcher.jsx";
 import { Moon, Sun } from "lucide-react";
 
 export default function Landing() {
   const { user } = useAuthStore();
   const { theme, toggle } = useThemeStore();
+  const t = useT();
 
   const cta = user ? (
-    <Link to="/app" className="btn-primary px-8 py-3 text-base"><Zap className="h-5 w-5" /> Go to Dashboard</Link>
+    <Link to="/app" className="btn-primary px-8 py-3 text-base"><Zap className="h-5 w-5" /> {t("landing.goDashboard")}</Link>
   ) : (
-    <Link to="/register" className="btn-primary px-8 py-3 text-base">Start Learning <ArrowRight className="h-5 w-5" /></Link>
+    <Link to="/register" className="btn-primary px-8 py-3 text-base">{t("landing.startLearning")} <ArrowRight className="h-5 w-5" /></Link>
   );
 
   return (
@@ -39,20 +42,21 @@ export default function Landing() {
             <span className="text-lg font-bold">Language Detective</span>
           </div>
           <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 dark:text-slate-300 md:flex">
-            <a href="#how" className="hover:text-brand-600">How it works</a>
-            <a href="#features" className="hover:text-brand-600">Features</a>
-            <a href="#faq" className="hover:text-brand-600">FAQ</a>
+            <a href="#how" className="hover:text-brand-600">{t("landing.nav.how")}</a>
+            <a href="#features" className="hover:text-brand-600">{t("landing.nav.features")}</a>
+            <a href="#faq" className="hover:text-brand-600">{t("landing.nav.faq")}</a>
           </nav>
           <div className="flex items-center gap-2">
+            <LanguageSwitcher />
             <button onClick={toggle} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
               {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </button>
             {user ? (
-              <Link to="/app" className="btn-primary">Dashboard</Link>
+              <Link to="/app" className="btn-primary">{t("common.dashboard")}</Link>
             ) : (
               <>
-                <Link to="/login" className="btn-outline">Log in</Link>
-                <Link to="/register" className="btn-primary">Sign up</Link>
+                <Link to="/login" className="btn-outline">{t("landing.login")}</Link>
+                <Link to="/register" className="btn-primary">{t("landing.signup")}</Link>
               </>
             )}
           </div>
@@ -62,24 +66,24 @@ export default function Landing() {
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute -top-40 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-to-br from-brand-500/20 to-violet-600/20 blur-3xl" />
         <div className="mx-auto max-w-6xl px-4 pb-20 pt-24 text-center">
-          <span className="badge-indigo mb-6 text-sm"><Sparkles className="h-4 w-4" /> AI-powered language learning</span>
+          <span className="badge-indigo mb-6 text-sm"><Sparkles className="h-4 w-4" /> {t("landing.badge")}</span>
           <h1 className="mx-auto max-w-3xl text-4xl font-extrabold leading-tight sm:text-6xl">
-            Stop repeating the <span className="bg-gradient-to-r from-brand-500 to-violet-600 bg-clip-text text-transparent">same language mistakes.</span>
+            {t("landing.hero.title1")} <span className="bg-gradient-to-r from-brand-500 to-violet-600 bg-clip-text text-transparent">{t("landing.hero.title2")}</span>
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg text-slate-600 dark:text-slate-300">
-            Language Detective finds your personal mistakes, explains them, and creates practice designed specifically for you.
+            {t("landing.hero.sub")}
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">{cta}</div>
           <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
             {[
-              { icon: Brain, label: "AI mistake detection" },
-              { icon: Target, label: "Personalized practice" },
-              { icon: MessagesSquare, label: "Natural AI conversation" },
-              { icon: TrendingUp, label: "Progress tracking" },
+              { icon: Brain, label: "landing.f1" },
+              { icon: Target, label: "landing.f2" },
+              { icon: MessagesSquare, label: "landing.f3" },
+              { icon: TrendingUp, label: "landing.f4" },
             ].map((f) => (
               <div key={f.label} className="card flex flex-col items-center gap-2 py-5">
                 <f.icon className="h-6 w-6 text-brand-500" />
-                <span className="text-sm font-semibold">{f.label}</span>
+                <span className="text-sm font-semibold">{t(f.label)}</span>
               </div>
             ))}
           </div>
@@ -88,20 +92,20 @@ export default function Landing() {
 
       <section id="how" className="border-y border-slate-200 bg-slate-50 py-16 dark:border-slate-700 dark:bg-slate-800/40">
         <div className="mx-auto max-w-6xl px-4">
-          <h2 className="text-center text-3xl font-bold">How it works</h2>
+          <h2 className="text-center text-3xl font-bold">{t("landing.how.title")}</h2>
           <p className="mx-auto mt-2 max-w-xl text-center text-slate-600 dark:text-slate-300">
-            Not another generic course. Language Detective learns from the mistakes YOU make.
+            {t("landing.how.sub")}
           </p>
           <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3">
             {[
-              { step: "01", title: "You write", desc: "Write anything in the language you're learning — a diary entry, a chat, an essay." },
-              { step: "02", title: "AI detects", desc: "AI finds every mistake, explains the rule behind it, and saves it to your personal mistake database." },
-              { step: "03", title: "You practice", desc: "Exercises are generated from YOUR mistakes, and spaced repetition makes them stick." },
+              { step: "01", title: "landing.how.step1t", desc: "landing.how.step1d" },
+              { step: "02", title: "landing.how.step2t", desc: "landing.how.step2d" },
+              { step: "03", title: "landing.how.step3t", desc: "landing.how.step3d" },
             ].map((s) => (
               <div key={s.step} className="card">
                 <span className="text-3xl font-extrabold text-brand-500/40">{s.step}</span>
-                <h3 className="mt-2 text-lg font-bold">{s.title}</h3>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{s.desc}</p>
+                <h3 className="mt-2 text-lg font-bold">{t(s.title)}</h3>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{t(s.desc)}</p>
               </div>
             ))}
           </div>
@@ -110,22 +114,22 @@ export default function Landing() {
 
       <section id="features" className="py-16">
         <div className="mx-auto max-w-6xl px-4">
-          <h2 className="text-center text-3xl font-bold">Everything you need</h2>
+          <h2 className="text-center text-3xl font-bold">{t("landing.feat.title")}</h2>
           <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {[
-              { icon: PenLine, title: "AI Writing Analysis", desc: "Paste any text and get a full correction with explanations for every mistake — tense, articles, prepositions and more." },
-              { icon: Target, title: "Personalized Practice", desc: "Exercises built around your weakest topics, not generic textbook drills." },
-              { icon: MessagesSquare, title: "AI Conversation", desc: "Chat naturally with AI. It corrects you gently without breaking the flow of conversation." },
-              { icon: BookOpen, title: "Smart Vocabulary", desc: "The AI explains any word you add — translation, definition, example and pronunciation." },
-              { icon: Brain, title: "Spaced Repetition", desc: "Mistakes come back for review at exactly the right moments: 1, 2, 4, 7, 14 and 30 days." },
-              { icon: TrendingUp, title: "Progress Tracking", desc: "XP, streaks, skill scores and mistake-reduction charts show your real improvement." },
+              { icon: PenLine, title: "landing.feat1t", desc: "landing.feat1d" },
+              { icon: Target, title: "landing.feat2t", desc: "landing.feat2d" },
+              { icon: MessagesSquare, title: "landing.feat3t", desc: "landing.feat3d" },
+              { icon: BookOpen, title: "landing.feat4t", desc: "landing.feat4d" },
+              { icon: Brain, title: "landing.feat5t", desc: "landing.feat5d" },
+              { icon: TrendingUp, title: "landing.feat6t", desc: "landing.feat6d" },
             ].map((f) => (
               <div key={f.title} className="card hover:border-brand-400/50 hover:shadow-md transition-all">
                 <div className="rounded-xl bg-brand-500/10 p-3 text-brand-600 dark:text-brand-300 w-fit">
                   <f.icon className="h-6 w-6" />
                 </div>
-                <h3 className="mt-3 text-lg font-bold">{f.title}</h3>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{f.desc}</p>
+                <h3 className="mt-3 text-lg font-bold">{t(f.title)}</h3>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{t(f.desc)}</p>
               </div>
             ))}
           </div>
@@ -134,13 +138,13 @@ export default function Landing() {
 
       <section className="border-y border-slate-200 bg-gradient-to-br from-brand-600 to-violet-700 py-16 text-white dark:border-slate-700">
         <div className="mx-auto max-w-6xl px-4 text-center">
-          <h2 className="text-3xl font-bold">Your mistakes become your curriculum</h2>
+          <h2 className="text-3xl font-bold">{t("landing.cta.title")}</h2>
           <p className="mx-auto mt-3 max-w-2xl text-white/80">
-            Every app gives you the same lessons. Language Detective gives you lessons about the things you actually get wrong — and re-tests them until they stick.
+            {t("landing.cta.sub")}
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm font-medium">
-            {["Real AI analysis", "Your private mistake database", "Personalized exercises", "Gamified progress"].map((i) => (
-              <span key={i} className="flex items-center gap-2"><Check className="h-4 w-4" /> {i}</span>
+            {["landing.cta.i1", "landing.cta.i2", "landing.cta.i3", "landing.cta.i4"].map((i) => (
+              <span key={i} className="flex items-center gap-2"><Check className="h-4 w-4" /> {t(i)}</span>
             ))}
           </div>
           <div className="mt-8">{cta}</div>
@@ -149,16 +153,16 @@ export default function Landing() {
 
       <section id="faq" className="py-16">
         <div className="mx-auto max-w-3xl px-4">
-          <h2 className="text-center text-3xl font-bold">FAQ</h2>
+          <h2 className="text-center text-3xl font-bold">{t("landing.nav.faq")}</h2>
           <div className="mt-8 space-y-3">
             {[
-              { q: "How does the AI find my mistakes?", a: "When you write a text, our AI analyzes it for grammatical, vocabulary, spelling and structural errors. Every mistake gets an explanation, a category and a severity level." },
-              { q: "How are practice exercises personalized?", a: "We track which topics you make mistakes in most often. When you start a practice session, the AI generates exercises specifically for those weak topics." },
-              { q: "What is spaced repetition?", a: "Each mistake is re-tested after 1, 2, 4, 7, 14 and 30 days. Answer correctly and the interval grows; get it wrong and you'll see it again sooner." },
-              { q: "Which AI provider is used?", a: "The platform supports both Google Gemini and OpenAI. You set your key in the environment and the app uses it automatically." },
-              { q: "Is my data private?", a: "Yes. Every user only sees their own mistakes, submissions and progress. Admin accounts have access to aggregated analytics only." },
+              { q: "landing.faq1q", a: "landing.faq1a" },
+              { q: "landing.faq2q", a: "landing.faq2a" },
+              { q: "landing.faq3q", a: "landing.faq3a" },
+              { q: "landing.faq4q", a: "landing.faq4a" },
+              { q: "landing.faq5q", a: "landing.faq5a" },
             ].map((f) => (
-              <FaqItem key={f.q} q={f.q} a={f.a} />
+              <FaqItem key={f.q} q={t(f.q)} a={t(f.a)} />
             ))}
           </div>
         </div>
@@ -173,7 +177,7 @@ export default function Landing() {
             <span className="font-bold">Language Detective</span>
           </div>
           <p className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400">
-            <ShieldCheck className="h-4 w-4" /> Your mistakes stay private. Built for serious learners.
+            <ShieldCheck className="h-4 w-4" /> {t("landing.footer")}
           </p>
         </div>
       </footer>

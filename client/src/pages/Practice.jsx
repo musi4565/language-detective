@@ -6,16 +6,18 @@ import { toast } from "../store/toastStore.js";
 import Spinner from "../components/Spinner.jsx";
 import ErrorState from "../components/ErrorState.jsx";
 import EmptyState from "../components/EmptyState.jsx";
+import { useT } from "../i18n/index.js";
 
 const typeLabel = {
-  MULTIPLE_CHOICE: "Multiple choice",
-  FILL_BLANK: "Fill in the blank",
-  CORRECT_SENTENCE: "Correct the sentence",
-  TRANSLATE: "Translate",
-  REARRANGE: "Rearrange words",
+  MULTIPLE_CHOICE: "prac.typeMc",
+  FILL_BLANK: "prac.typeFill",
+  CORRECT_SENTENCE: "prac.typeCorrect",
+  TRANSLATE: "prac.typeTranslate",
+  REARRANGE: "prac.typeRearrange",
 };
 
 export default function Practice() {
+  const t = useT();
   const [exercises, setExercises] = useState([]);
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState({});
@@ -38,7 +40,7 @@ export default function Practice() {
     try {
       const { data } = await api.get("/practice?count=5");
       if (data.data.exercises.length === 0) {
-        setError("No exercises generated. Try again.");
+        setError(t("prac.none"));
         return;
       }
       setExercises(data.data.exercises);
@@ -46,7 +48,7 @@ export default function Practice() {
       setStarted(true);
       setCurrent(0);
     } catch (err) {
-      setError(apiErrorMessage(err, "Could not generate practice. Is the AI configured?"));
+      setError(apiErrorMessage(err, t("prac.aiConfig")));
     } finally {
       setGenerating(false);
     }
@@ -59,8 +61,8 @@ export default function Practice() {
       const { data } = await api.post(`/practice/${ex.id}/submit`, { answer });
       setAnswers((a) => ({ ...a, [ex.id]: { answer, isCorrect: data.data.isCorrect } }));
       setFeedback({ ...data.data, exercise: ex });
-      if (data.data.isCorrect) toast.success(`+${data.data.xpEarned} XP`);
-      else toast.error("Not quite. Check the explanation below.");
+      if (data.data.isCorrect) toast.success(t("prac.correctToast", { xp: data.data.xpEarned }));
+      else toast.error(t("prac.incorrectToast"));
     } catch (err) {
       toast.error(apiErrorMessage(err));
     } finally {
@@ -84,9 +86,9 @@ export default function Practice() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold">Personalized Practice</h1>
+          <h1 className="text-2xl font-bold">{t("prac.title")}</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Exercises generated from YOUR most common mistakes.
+            {t("prac.sub")}
           </p>
         </div>
 
@@ -97,14 +99,14 @@ export default function Practice() {
             <div className="rounded-2xl bg-brand-100 p-5 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300">
               <Dumbbell className="h-10 w-10" />
             </div>
-            <h2 className="mt-4 text-xl font-bold">Ready to practice?</h2>
+            <h2 className="mt-4 text-xl font-bold">{t("prac.ready")}</h2>
             <p className="mt-2 max-w-md text-sm text-slate-500 dark:text-slate-400">
-              The AI reads your mistake history and builds 5 exercises around your weakest topics — tense errors, articles, prepositions, and more.
+              {t("prac.desc")}
             </p>
             <button onClick={generate} disabled={generating} className="btn-primary mt-6">
-              {generating ? <><Spinner size={16} /> Generating exercises…</> : <><RefreshCw className="h-4 w-4" /> Generate practice set</>}
+              {generating ? <><Spinner size={16} /> {t("prac.generating")}</> : <><RefreshCw className="h-4 w-4" /> {t("prac.generate")}</>}
             </button>
-            {generating && <p className="mt-3 text-xs text-slate-400">This can take up to 30 seconds while the AI works…</p>}
+            {generating && <p className="mt-3 text-xs text-slate-400">{t("prac.aiWorking")}</p>}
           </div>
         )}
       </div>
@@ -118,13 +120,13 @@ export default function Practice() {
           <div className={`rounded-2xl p-5 ${summary.correct === summary.total ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300" : "bg-brand-100 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300"}`}>
             {summary.correct === summary.total ? <CheckCircle2 className="h-10 w-10" /> : <Dumbbell className="h-10 w-10" />}
           </div>
-          <h2 className="mt-4 text-2xl font-bold">Practice complete!</h2>
+          <h2 className="mt-4 text-2xl font-bold">{t("prac.complete")}</h2>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            You got <b>{summary.correct}</b> out of <b>{summary.total}</b> correct.
+            {t("prac.score", { correct: summary.correct, total: summary.total })}
           </p>
           <div className="mt-4 flex gap-2">
-            <button onClick={generate} className="btn-secondary"><RefreshCw className="h-4 w-4" /> New set</button>
-            <button onClick={() => { setStarted(false); setDone(false); }} className="btn-outline">Back</button>
+            <button onClick={generate} className="btn-secondary"><RefreshCw className="h-4 w-4" /> {t("prac.newSet")}</button>
+            <button onClick={() => { setStarted(false); setDone(false); }} className="btn-outline">{t("common.back")}</button>
           </div>
         </div>
       </div>
@@ -137,8 +139,8 @@ export default function Practice() {
   return (
     <div className="mx-auto max-w-2xl space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Practice</h1>
-        <span className="text-sm text-slate-400">Exercise {current + 1} of {exercises.length}</span>
+        <h1 className="text-xl font-bold">{t("nav.practice")}</h1>
+        <span className="text-sm text-slate-400">{t("prac.exercise", { current: current + 1, total: exercises.length })}</span>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
         <div className="h-full rounded-full bg-brand-500 transition-all" style={{ width: `${progressPct}%` }} />
@@ -153,7 +155,7 @@ export default function Practice() {
 
       <div key={ex.id} className="card animate-fade-in">
         <div className="mb-2 flex items-center justify-between">
-          <span className="badge-indigo">{typeLabel[ex.type] || ex.type}</span>
+          <span className="badge-indigo">{t(typeLabel[ex.type] || ex.type)}</span>
           <span className="badge-slate">{ex.category}</span>
         </div>
         <h2 className="text-lg font-semibold leading-relaxed">{ex.prompt}</h2>
@@ -178,9 +180,9 @@ export default function Practice() {
                 onSubmit={(e) => { e.preventDefault(); const v = e.target.answer.value.trim(); if (v) submit(v); }}
                 className="flex gap-2"
               >
-                <input name="answer" className="input" placeholder="Type your answer…" autoFocus />
+                <input name="answer" className="input" placeholder={t("prac.typeAnswer")} autoFocus />
                 <button type="submit" disabled={loading} className="btn-primary shrink-0">
-                  {loading ? <Spinner size={16} /> : "Check"}
+                  {loading ? <Spinner size={16} /> : t("common.check")}
                 </button>
               </form>
             )}
@@ -190,7 +192,7 @@ export default function Practice() {
             <div className={`flex items-center gap-2 rounded-xl p-3 ${feedback.isCorrect ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-red-500/10 text-red-600 dark:text-red-400"}`}>
               {feedback.isCorrect ? <CheckCircle2 className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
               <p className="text-sm font-semibold">
-                {feedback.isCorrect ? `Correct! +${feedback.xpEarned} XP` : `Incorrect — the answer is: ${feedback.correctAnswer}`}
+                {feedback.isCorrect ? t("prac.correctAnswer", { xp: feedback.xpEarned }) : t("prac.incorrectAnswer", { answer: feedback.correctAnswer })}
               </p>
             </div>
             {feedback.explanation && (
@@ -198,11 +200,11 @@ export default function Practice() {
             )}
             {feedback.mastery && (
               <p className="mt-2 text-xs text-slate-400">
-                Topic mastery updated: {feedback.mastery.masteryScore}% · next review in {Math.round((new Date(feedback.mastery.nextReviewAt) - new Date()) / 86400000)} day(s)
+                {t("prac.masteryNote", { score: feedback.mastery.masteryScore, days: Math.round((new Date(feedback.mastery.nextReviewAt) - new Date()) / 86400000) })}
               </p>
             )}
             <button onClick={next} className="btn-primary mt-4 w-full">
-              {current + 1 >= exercises.length ? "Finish" : "Next exercise"}
+              {current + 1 >= exercises.length ? t("common.finish") : t("prac.nextExercise")}
             </button>
           </div>
         )}

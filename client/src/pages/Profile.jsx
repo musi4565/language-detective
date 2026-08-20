@@ -5,6 +5,7 @@ import { useAuthStore } from "../store/authStore.js";
 import { apiErrorMessage } from "../api/client.js";
 import { toast } from "../store/toastStore.js";
 import Spinner from "../components/Spinner.jsx";
+import { useT } from "../i18n/index.js";
 
 const LANGUAGES = ["English", "Russian", "Uzbek", "Spanish", "French", "German", "Arabic", "Chinese", "Turkish", "Italian", "Korean", "Japanese"];
 const LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"];
@@ -19,6 +20,7 @@ const AVATARS = [
 
 export default function Profile() {
   const { user, setUser } = useAuthStore();
+  const t = useT();
   const [form, setForm] = useState({
     name: user?.name || "",
     nativeLanguage: user?.nativeLanguage || "English",
@@ -35,7 +37,7 @@ export default function Profile() {
     try {
       const { data } = await api.patch("/auth/profile", form);
       setUser(data.data.user);
-      toast.success("Profile updated");
+      toast.success(t("prof.updated"));
     } catch (err) {
       toast.error(apiErrorMessage(err));
     } finally {
@@ -47,7 +49,7 @@ export default function Profile() {
     try {
       const { data } = await api.patch("/auth/profile", { avatar });
       setUser(data.data.user);
-      toast.success("Avatar updated");
+      toast.success(t("prof.avatarUpdated"));
     } catch (err) {
       toast.error(apiErrorMessage(err));
     }
@@ -59,7 +61,7 @@ export default function Profile() {
     try {
       await api.post("/auth/change-password", passForm);
       setPassForm({ currentPassword: "", newPassword: "" });
-      toast.success("Password changed");
+      toast.success(t("prof.passwordChanged"));
     } catch (err) {
       toast.error(apiErrorMessage(err));
     } finally {
@@ -69,7 +71,7 @@ export default function Profile() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Profile</h1>
+      <h1 className="text-2xl font-bold">{t("prof.title")}</h1>
 
       <div className="card">
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
@@ -77,15 +79,15 @@ export default function Profile() {
             <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-brand-500 to-violet-600 text-2xl font-bold text-white">
               {user.avatar ? <img src={user.avatar} alt="avatar" className="h-full w-full" /> : user.name.charAt(0).toUpperCase()}
             </div>
-            <button className="btn-outline px-3 py-1.5 text-xs"><Camera className="h-3.5 w-3.5" /> Change</button>
+            <button className="btn-outline px-3 py-1.5 text-xs"><Camera className="h-3.5 w-3.5" /> {t("prof.change")}</button>
           </div>
           <div className="flex-1">
             <h2 className="text-lg font-bold">{user.name}</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <span className="badge-indigo">Level {user.level}</span>
+              <span className="badge-indigo">{t("common.level")} {user.level}</span>
               <span className="badge-amber">⚡ {user.xp} XP</span>
-              <span className="badge-green">🔥 {user.streak} day streak</span>
+              <span className="badge-green">🔥 {user.streak} {t("common.dayStreak")}</span>
               <span className="badge-slate">{user.role}</span>
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -101,27 +103,27 @@ export default function Profile() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <form onSubmit={saveProfile} className="card space-y-4">
-          <h3 className="font-bold">Learning settings</h3>
+          <h3 className="font-bold">{t("prof.learningSettings")}</h3>
           <div>
-            <label className="label flex items-center gap-1.5"><User className="h-3.5 w-3.5" /> Name</label>
+            <label className="label flex items-center gap-1.5"><User className="h-3.5 w-3.5" /> {t("auth.name")}</label>
             <input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="label flex items-center gap-1.5"><Languages className="h-3.5 w-3.5" /> Native language</label>
+              <label className="label flex items-center gap-1.5"><Languages className="h-3.5 w-3.5" /> {t("auth.nativeLanguage")}</label>
               <select className="input" value={form.nativeLanguage} onChange={(e) => setForm({ ...form, nativeLanguage: e.target.value })}>
                 {LANGUAGES.map((l) => <option key={l}>{l}</option>)}
               </select>
             </div>
             <div>
-              <label className="label flex items-center gap-1.5"><BookOpen className="h-3.5 w-3.5" /> Learning</label>
+              <label className="label flex items-center gap-1.5"><BookOpen className="h-3.5 w-3.5" /> {t("prof.learning")}</label>
               <select className="input" value={form.learningLanguage} onChange={(e) => setForm({ ...form, learningLanguage: e.target.value })}>
                 {LANGUAGES.map((l) => <option key={l}>{l}</option>)}
               </select>
             </div>
           </div>
           <div>
-            <label className="label">Level</label>
+            <label className="label">{t("common.level")}</label>
             <div className="flex flex-wrap gap-2">
               {LEVELS.map((l) => (
                 <button
@@ -135,20 +137,20 @@ export default function Profile() {
               ))}
             </div>
           </div>
-          <button type="submit" disabled={saving} className="btn-primary">{saving ? <Spinner size={16} /> : "Save changes"}</button>
+          <button type="submit" disabled={saving} className="btn-primary">{saving ? <Spinner size={16} /> : t("prof.saveChanges")}</button>
         </form>
 
         <form onSubmit={changePassword} className="card space-y-4">
-          <h3 className="font-bold flex items-center gap-2"><KeyRound className="h-4 w-4" /> Change password</h3>
+          <h3 className="font-bold flex items-center gap-2"><KeyRound className="h-4 w-4" /> {t("prof.changePassword")}</h3>
           <div>
-            <label className="label">Current password</label>
+            <label className="label">{t("prof.currentPassword")}</label>
             <input type="password" className="input" value={passForm.currentPassword} onChange={(e) => setPassForm({ ...passForm, currentPassword: e.target.value })} required />
           </div>
           <div>
-            <label className="label">New password</label>
+            <label className="label">{t("prof.newPassword")}</label>
             <input type="password" className="input" minLength={6} value={passForm.newPassword} onChange={(e) => setPassForm({ ...passForm, newPassword: e.target.value })} required />
           </div>
-          <button type="submit" disabled={savingPass} className="btn-secondary">{savingPass ? <Spinner size={16} /> : "Update password"}</button>
+          <button type="submit" disabled={savingPass} className="btn-secondary">{savingPass ? <Spinner size={16} /> : t("prof.updatePassword")}</button>
         </form>
       </div>
     </div>

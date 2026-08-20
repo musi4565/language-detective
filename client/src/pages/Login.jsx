@@ -5,11 +5,13 @@ import { useAuthStore } from "../store/authStore.js";
 import { apiErrorMessage } from "../api/client.js";
 import { toast } from "../store/toastStore.js";
 import Spinner from "../components/Spinner.jsx";
+import { useT } from "../i18n/index.js";
 
 export default function Login() {
   const { login } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
+  const t = useT();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -21,10 +23,10 @@ export default function Login() {
     setLoading(true);
     try {
       const user = await login(email, password);
-      toast.success(`Welcome back, ${user.name}!`);
+      toast.success(t("auth.welcomeBackToast", { name: user.name }));
       navigate(location.state?.from?.pathname || "/app");
     } catch (err) {
-      setError(apiErrorMessage(err, "Login failed"));
+      setError(apiErrorMessage(err, t("auth.loginFailed")));
     } finally {
       setLoading(false);
     }
@@ -40,19 +42,19 @@ export default function Login() {
           <span className="text-xl font-bold">Language Detective</span>
         </Link>
         <div className="rounded-2xl bg-white p-8 shadow-2xl dark:bg-slate-800">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Welcome back</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Log in to continue your language journey.</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t("auth.welcomeBack")}</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t("auth.loginSub")}</p>
 
           <form onSubmit={submit} className="mt-6 space-y-4">
             <div>
-              <label className="label">Email</label>
+              <label className="label">{t("auth.email")}</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                 <input type="email" className="input pl-10" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
               </div>
             </div>
             <div>
-              <label className="label">Password</label>
+              <label className="label">{t("auth.password")}</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                 <input type="password" className="input pl-10" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
@@ -64,20 +66,20 @@ export default function Login() {
             )}
 
             <button type="submit" disabled={loading} className="btn-primary w-full">
-              {loading ? <Spinner size={16} /> : <><span>Log in</span><ArrowRight className="h-4 w-4" /></>}
+              {loading ? <Spinner size={16} /> : <><span>{t("auth.login")}</span><ArrowRight className="h-4 w-4" /></>}
             </button>
           </form>
 
           <div className="mt-6 rounded-xl bg-slate-100 p-4 text-sm dark:bg-slate-700/50">
-            <p className="font-medium text-slate-700 dark:text-slate-200">Demo accounts</p>
+            <p className="font-medium text-slate-700 dark:text-slate-200">{t("auth.demoAccounts")}</p>
             <p className="mt-1 text-slate-500 dark:text-slate-400">User: demo@languagedetective.app / demo1234</p>
             <p className="text-slate-500 dark:text-slate-400">Admin: admin@languagedetective.app / Admin@123</p>
           </div>
 
           <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
-            No account?{" "}
+            {t("auth.noAccount")}{" "}
             <Link to="/register" className="font-semibold text-brand-600 hover:underline dark:text-brand-400">
-              Sign up
+              {t("auth.signup")}
             </Link>
           </p>
         </div>

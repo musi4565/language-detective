@@ -7,8 +7,10 @@ import Spinner from "../components/Spinner.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 import ErrorState from "../components/ErrorState.jsx";
 import Modal from "../components/Modal.jsx";
+import { useT } from "../i18n/index.js";
 
 export default function Vocabulary() {
+  const t = useT();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -40,7 +42,7 @@ export default function Vocabulary() {
     setAdding(true);
     try {
       await api.post("/vocabulary", { word: word.trim() });
-      toast.success("Word added (AI filled in the details)");
+      toast.success(t("vocab.added"));
       setWord("");
       setModal(false);
       load();
@@ -55,7 +57,7 @@ export default function Vocabulary() {
     try {
       await api.delete(`/vocabulary/${id}`);
       setItems((s) => s.filter((x) => x.id !== id));
-      toast.info("Word removed");
+      toast.info(t("vocab.removed"));
     } catch (err) {
       toast.error(apiErrorMessage(err));
     }
@@ -65,7 +67,7 @@ export default function Vocabulary() {
     setReviewingId(id);
     try {
       const { data } = await api.post(`/vocabulary/${id}/review`, { isCorrect });
-      toast.success(isCorrect ? `Great! +${data.data.xpEarned} XP` : "You'll see this word again soon");
+      toast.success(isCorrect ? t("vocab.great", { xp: data.data.xpEarned }) : t("vocab.againSoon"));
       load();
     } catch (err) {
       toast.error(apiErrorMessage(err));
@@ -78,16 +80,16 @@ export default function Vocabulary() {
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-bold">Vocabulary</h1>
+          <h1 className="text-2xl font-bold">{t("vocab.title")}</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Words worth remembering. Add any word — the AI explains it for you.
+            {t("vocab.sub")}
           </p>
         </div>
         <div className="flex gap-2">
           <button onClick={() => setDueOnly((d) => !d)} className={`btn-outline ${dueOnly ? "border-brand-500 text-brand-600" : ""}`}>
-            Due for review
+            {t("vocab.dueForReview")}
           </button>
-          <button onClick={() => setModal(true)} className="btn-primary"><Plus className="h-4 w-4" /> Add word</button>
+          <button onClick={() => setModal(true)} className="btn-primary"><Plus className="h-4 w-4" /> {t("vocab.addWord")}</button>
         </div>
       </div>
 
@@ -97,9 +99,9 @@ export default function Vocabulary() {
         <div className="flex justify-center py-16 text-brand-600"><Spinner size={28} /></div>
       ) : items.length === 0 ? (
         <EmptyState
-          title={dueOnly ? "Nothing due for review" : "No words yet"}
-          description={dueOnly ? "All words reviewed. Great job!" : "Add your first word and the AI will define it, translate it and give an example."}
-          cta={dueOnly ? undefined : "Add a word"}
+          title={dueOnly ? t("vocab.nothingDue") : t("vocab.noWords")}
+          description={dueOnly ? t("vocab.allReviewed") : t("vocab.noWordsDesc")}
+          cta={dueOnly ? undefined : t("vocab.addAWord")}
           icon={BookOpen}
           onCta={dueOnly ? undefined : () => setModal(true)}
         />
@@ -115,7 +117,7 @@ export default function Vocabulary() {
                     {v.pronunciation && <p className="text-xs text-slate-400">{v.pronunciation}</p>}
                   </div>
                   <div className="flex gap-1">
-                    <button className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700" title="Listen (browser TTS)">
+                    <button className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700" title={t("vocab.listen")}>
                       <Volume2 className="h-4 w-4" onClick={() => { try { const u = new SpeechSynthesisUtterance(v.word); u.lang = "en-US"; speechSynthesis.speak(u); } catch {} }} />
                     </button>
                     <button onClick={() => remove(v.id)} className="rounded-lg p-1.5 text-slate-400 hover:bg-red-500/10 hover:text-red-500">
@@ -130,16 +132,16 @@ export default function Vocabulary() {
 
                 <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3 text-xs dark:border-slate-700">
                   <span className="badge-slate">{v.difficulty}</span>
-                  <span className={due ? "badge-amber" : "badge-green"}>{due ? "due now" : `review ${new Date(v.nextReviewAt).toLocaleDateString()}`}</span>
-                  <span className="ml-auto">mastery <b className={v.masteryScore >= 80 ? "text-emerald-500" : "text-amber-500"}>{v.masteryScore}%</b></span>
+                  <span className={due ? "badge-amber" : "badge-green"}>{due ? t("common.dueNow") : t("vocab.reviewDate", { date: new Date(v.nextReviewAt).toLocaleDateString() })}</span>
+                  <span className="ml-auto">{t("common.mastery").toLowerCase()} <b className={v.masteryScore >= 80 ? "text-emerald-500" : "text-amber-500"}>{v.masteryScore}%</b></span>
                 </div>
 
                 <div className="mt-3 flex gap-2">
                   <button onClick={() => review(v.id, true)} disabled={reviewingId === v.id} className="btn-secondary flex-1 px-2 py-1.5 text-xs">
-                    <ThumbsUp className="h-3.5 w-3.5" /> Knew it
+                    <ThumbsUp className="h-3.5 w-3.5" /> {t("vocab.knewIt")}
                   </button>
                   <button onClick={() => review(v.id, false)} disabled={reviewingId === v.id} className="btn-outline flex-1 px-2 py-1.5 text-xs">
-                    <ThumbsDown className="h-3.5 w-3.5" /> Forgot
+                    <ThumbsDown className="h-3.5 w-3.5" /> {t("vocab.forgot")}
                   </button>
                 </div>
               </div>
@@ -148,18 +150,18 @@ export default function Vocabulary() {
         </div>
       )}
 
-      <Modal open={modal} onClose={() => setModal(false)} title="Add a new word">
+      <Modal open={modal} onClose={() => setModal(false)} title={t("vocab.modalTitle")}>
         <form onSubmit={addWord} className="space-y-4">
           <div>
-            <label className="label">Word</label>
-            <input className="input" placeholder="e.g. ubiquitous" value={word} onChange={(e) => setWord(e.target.value)} autoFocus required />
+            <label className="label">{t("common.word")}</label>
+            <input className="input" placeholder={t("vocab.examplePh")} value={word} onChange={(e) => setWord(e.target.value)} autoFocus required />
           </div>
           <p className="text-xs text-slate-400">
-            Just type the word — the AI will automatically add the translation, definition, example and pronunciation.
+            {t("vocab.modalHint")}
           </p>
           <div className="flex justify-end gap-2">
-            <button type="button" onClick={() => setModal(false)} className="btn-outline"><X className="h-4 w-4" /> Cancel</button>
-            <button type="submit" disabled={adding} className="btn-primary">{adding ? <Spinner size={16} /> : "Add word"}</button>
+            <button type="button" onClick={() => setModal(false)} className="btn-outline"><X className="h-4 w-4" /> {t("common.cancel")}</button>
+            <button type="submit" disabled={adding} className="btn-primary">{adding ? <Spinner size={16} /> : t("vocab.addWord")}</button>
           </div>
         </form>
       </Modal>

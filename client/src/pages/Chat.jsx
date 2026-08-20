@@ -5,9 +5,11 @@ import { apiErrorMessage } from "../api/client.js";
 import { toast } from "../store/toastStore.js";
 import Spinner from "../components/Spinner.jsx";
 import { useAuthStore } from "../store/authStore.js";
+import { useT } from "../i18n/index.js";
 
 export default function Chat() {
   const { user } = useAuthStore();
+  const t = useT();
   const [sessions, setSessions] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -49,7 +51,7 @@ export default function Chat() {
 
   const newSession = async () => {
     try {
-      const { data } = await api.post("/chat/session", { title: "New conversation" });
+      const { data } = await api.post("/chat/session", { title: t("chat.newConversation") });
       await loadSessions();
       openSession(data.data.session.id);
     } catch (err) {
@@ -86,7 +88,7 @@ export default function Chat() {
         setCorrections([]);
         if (sessions.length > 1) openSession(sessions.find((s) => s.id !== id).id);
       }
-      toast.info("Conversation deleted");
+      toast.info(t("chat.deleted"));
     } catch (err) {
       toast.error(apiErrorMessage(err));
     }
@@ -95,7 +97,7 @@ export default function Chat() {
   return (
     <div className="flex h-[calc(100vh-8rem)] flex-col gap-4 lg:flex-row">
       <aside className="w-full shrink-0 lg:w-56">
-        <button onClick={newSession} className="btn-primary w-full mb-3"><Plus className="h-4 w-4" /> New conversation</button>
+        <button onClick={newSession} className="btn-primary w-full mb-3"><Plus className="h-4 w-4" /> {t("chat.newConversation")}</button>
         <div className="space-y-1 overflow-y-auto">
           {sessions.map((s) => (
             <div
@@ -127,11 +129,11 @@ export default function Chat() {
               <div className="rounded-2xl bg-brand-100 p-4 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300">
                 <Bot className="h-8 w-8" />
               </div>
-              <p className="font-semibold">Practice conversation in {user?.learningLanguage || "English"}</p>
+              <p className="font-semibold">{t("chat.practiceIn", { lang: user?.learningLanguage || "English" })}</p>
               <p className="max-w-sm text-sm text-slate-500 dark:text-slate-400">
-                Chat naturally with AI. It will gently correct your mistakes without interrupting the flow.
+                {t("chat.desc")}
               </p>
-              <button onClick={newSession} className="btn-primary mt-2"><Plus className="h-4 w-4" /> Start chatting</button>
+              <button onClick={newSession} className="btn-primary mt-2"><Plus className="h-4 w-4" /> {t("chat.start")}</button>
             </div>
           )}
 
@@ -151,7 +153,7 @@ export default function Chat() {
                     <div className="mt-2 border-t border-slate-300/40 pt-2 dark:border-slate-600/40">
                       {m.corrections.map((c, i) => (
                         <p key={i} className="text-xs text-slate-500 dark:text-slate-300">
-                          Correction: <span className="line-through text-red-400">{c.original}</span> → <span className="font-medium text-emerald-500">{c.correction}</span>
+                          {t("chat.correction")} <span className="line-through text-red-400">{c.original}</span> → <span className="font-medium text-emerald-500">{c.correction}</span>
                           {c.explanation && <span className="text-slate-400"> ({c.explanation})</span>}
                         </p>
                       ))}
@@ -164,7 +166,7 @@ export default function Chat() {
           {sending && (
             <div className="flex justify-start">
               <div className="flex items-center gap-2 rounded-2xl bg-slate-100 px-4 py-2.5 text-sm text-slate-400 dark:bg-slate-700">
-                <Spinner size={14} /> Thinking…
+                <Spinner size={14} /> {t("chat.thinking")}
               </div>
             </div>
           )}
@@ -174,7 +176,7 @@ export default function Chat() {
         {corrections.length > 0 && (
           <div className="mx-4 mb-2 rounded-xl border border-amber-400/30 bg-amber-500/10 p-3">
             <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">
-              <Info className="h-3.5 w-3.5" /> Detected in your last message
+              <Info className="h-3.5 w-3.5" /> {t("chat.detected")}
             </p>
             {corrections.map((c, i) => (
               <p key={i} className="text-xs text-slate-600 dark:text-slate-300">
@@ -187,7 +189,7 @@ export default function Chat() {
         <form onSubmit={send} className="flex gap-2 border-t border-slate-200 p-3 dark:border-slate-700">
           <input
             className="input"
-            placeholder="Type a message…"
+            placeholder={t("chat.typeMessage")}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={!activeId || sending}
