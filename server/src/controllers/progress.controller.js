@@ -115,7 +115,7 @@ export const progress = asyncHandler(async (req, res) => {
     unlockedAt: unlockedMap.get(a.id) || null,
   }));
 
-  const mistakeTotal = mistakesByCategory.reduce((s, c) => s + c._count.category, 0);
+  const mistakesTotal = mistakesByCategory.reduce((s, c) => s + c._count.category, 0);
 
   // mistake reduction over time: group by week (last 8 weeks)
   const eightWeeksAgo = new Date(Date.now() - 8 * 7 * 24 * 60 * 60 * 1000);
@@ -170,15 +170,15 @@ export const weeklyActivity = asyncHandler(async (req, res) => {
 
 export const skills = asyncHandler(async (req, res) => {
   const userId = req.user.id;
-  const [writing, speaking, exercises] = await Promise.all([
+  const [writing, speaking, totalAttempts, correctAttempts] = await Promise.all([
     prisma.writingSubmission.aggregate({ where: { userId }, _avg: { overallScore: true } }),
     prisma.speakingSession.aggregate({ where: { userId }, _avg: { overallScore: true } }),
-    prisma.exerciseAttempt.aggregate({ where: { userId }, _count: true, _sum: { isCorrect: true } }),
+    prisma.exerciseAttempt.count({ where: { userId } }),
+    prisma.exerciseAttempt.count({ where: { userId, isCorrect: true } }),
   ]);
-  const attempts = exercises._count || 0;
   success(res, {
     writing: writing._avg?.overallScore ? Math.round(writing._avg.overallScore) : 0,
     speaking: speaking._avg?.overallScore ? Math.round(speaking._avg.overallScore) : 0,
-    practice: attempts ? Math.round(((exercises._sum.isCorrect || 0) / attempts) * 100) : 0,
+    practice: totalAttempts ? Math.round((correctAttempts / totalAttempts) * 100) : 0,
   });
 });
