@@ -110,7 +110,7 @@ export default function AdminPanel() {
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold"><ShieldCheck className="h-6 w-6 text-brand-500" /> {t("admin.title")}</h1>
+          <h1 className="flex items-center gap-2 text-xl font-semibold sm:text-2xl"><ShieldCheck className="h-6 w-6 text-brand-500" /> {t("admin.title")}</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t("admin.sub")}</p>
         </div>
         <div className="flex gap-2">
@@ -154,7 +154,7 @@ export default function AdminPanel() {
               <div className="space-y-2">
                 {analytics.commonMistakes.map((m, i) => (
                   <div key={m.topic} className="flex items-center gap-3 text-sm">
-                    <span className="w-6 font-bold text-slate-400">{i + 1}</span>
+                    <span className="w-6 font-semibold text-slate-400">{i + 1}</span>
                     <span className="flex-1 font-medium">{m.topic}</span>
                     <span className="badge-red">{m.count}×</span>
                   </div>
@@ -258,7 +258,7 @@ export default function AdminPanel() {
 function AdminStat({ label, value }) {
   return (
     <div className="card">
-      <p className="text-2xl font-bold">{value}</p>
+      <p className="text-2xl font-semibold">{value}</p>
       <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
     </div>
   );

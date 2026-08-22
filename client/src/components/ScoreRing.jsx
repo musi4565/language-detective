@@ -21,7 +21,7 @@ export default function ScoreRing({ value, size = 72, stroke = 7, label }) {
         />
       </svg>
       <div className="absolute text-center">
-        <span className="block text-lg font-bold" style={{ color }}>
+        <span className="block text-lg font-semibold" style={{ color }}>
           {Math.round(pct)}
         </span>
         {label && <span className="block text-[10px] uppercase tracking-wide text-slate-400">{label}</span>}

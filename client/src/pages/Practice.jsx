@@ -86,7 +86,7 @@ export default function Practice() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold">{t("prac.title")}</h1>
+          <h1 className="text-xl font-semibold sm:text-2xl">{t("prac.title")}</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {t("prac.sub")}
           </p>
@@ -96,10 +96,10 @@ export default function Practice() {
           <ErrorState message={error} onRetry={generate} />
         ) : (
           <div className="card flex flex-col items-center py-14 text-center">
-            <div className="rounded-2xl bg-brand-100 p-5 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300">
+            <div className="rounded-2xl bg-brand-50 p-5 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300">
               <Dumbbell className="h-10 w-10" />
             </div>
-            <h2 className="mt-4 text-xl font-bold">{t("prac.ready")}</h2>
+            <h2 className="mt-4 text-xl font-semibold">{t("prac.ready")}</h2>
             <p className="mt-2 max-w-md text-sm text-slate-500 dark:text-slate-400">
               {t("prac.desc")}
             </p>
@@ -114,17 +114,25 @@ export default function Practice() {
   }
 
   if (done) {
+    const pct = Math.round((summary.correct / summary.total) * 100);
     return (
-      <div className="mx-auto max-w-lg space-y-6">
+      <div className="mx-auto max-w-md space-y-6">
         <div className="card flex flex-col items-center py-10 text-center">
-          <div className={`rounded-2xl p-5 ${summary.correct === summary.total ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300" : "bg-brand-100 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300"}`}>
-            {summary.correct === summary.total ? <CheckCircle2 className="h-10 w-10" /> : <Dumbbell className="h-10 w-10" />}
+          <p className="section-title">{t("prac.yourResult")}</p>
+          <p className="mt-3 text-4xl font-semibold">{summary.correct} / {summary.total}</p>
+          <p className="mt-1 text-sm font-medium text-brand-600 dark:text-brand-400">{pct}%</p>
+          <div className="mt-5 flex w-full gap-3 border-t border-slate-100 pt-5 dark:border-slate-700/60">
+            <div className="flex-1 text-center">
+              <p className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">{summary.correct}</p>
+              <p className="text-xs text-slate-400">{t("prac.correctAnswers")}</p>
+            </div>
+            <div className="w-px bg-slate-100 dark:bg-slate-700" />
+            <div className="flex-1 text-center">
+              <p className="text-lg font-semibold text-red-500">{summary.total - summary.correct}</p>
+              <p className="text-xs text-slate-400">{t("prac.wrongAnswers")}</p>
+            </div>
           </div>
-          <h2 className="mt-4 text-2xl font-bold">{t("prac.complete")}</h2>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            {t("prac.score", { correct: summary.correct, total: summary.total })}
-          </p>
-          <div className="mt-4 flex gap-2">
+          <div className="mt-5 flex gap-2">
             <button onClick={generate} className="btn-secondary"><RefreshCw className="h-4 w-4" /> {t("prac.newSet")}</button>
             <button onClick={() => { setStarted(false); setDone(false); }} className="btn-outline">{t("common.back")}</button>
           </div>
@@ -139,11 +147,11 @@ export default function Practice() {
   return (
     <div className="mx-auto max-w-2xl space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">{t("nav.practice")}</h1>
+        <h1 className="text-xl font-semibold">{t("nav.practice")}</h1>
         <span className="text-sm text-slate-400">{t("prac.exercise", { current: current + 1, total: exercises.length })}</span>
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-        <div className="h-full rounded-full bg-brand-500 transition-all" style={{ width: `${progressPct}%` }} />
+      <div className="progress-track h-2">
+        <div className="progress-fill" style={{ width: `${progressPct}%` }} />
       </div>
 
       {topics.length > 0 && (
@@ -160,36 +168,60 @@ export default function Practice() {
         </div>
         <h2 className="text-lg font-semibold leading-relaxed">{ex.prompt}</h2>
 
-        {!feedback ? (
-          <div className="mt-5">
-            {ex.options && ex.options.length > 0 ? (
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {ex.options.map((opt) => (
+        <div className="mt-5">
+          {ex.options && ex.options.length > 0 ? (
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {ex.options.map((opt, i) => {
+                const letter = String.fromCharCode(65 + i);
+                const chosen = answers[ex.id]?.answer === opt;
+                const isCorrectOpt = feedback && opt === feedback.correctAnswer;
+                return (
                   <button
                     key={opt}
-                    onClick={() => submit(opt)}
-                    disabled={loading}
-                    className="rounded-xl border border-slate-200 px-4 py-3 text-left text-sm font-medium hover:border-brand-400 disabled:opacity-50 dark:border-slate-600"
+                    onClick={() => !feedback && submit(opt)}
+                    disabled={loading || !!feedback}
+                    className={`flex items-center gap-3 rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors duration-200 disabled:cursor-default ${
+                      feedback
+                        ? isCorrectOpt
+                          ? "border-emerald-400 bg-emerald-50 dark:border-emerald-500/50 dark:bg-emerald-900/20"
+                          : chosen
+                          ? "border-red-300 bg-red-50 dark:border-red-500/40 dark:bg-red-900/20"
+                          : "border-slate-200 opacity-50 dark:border-slate-700"
+                        : "border-slate-200 hover:border-brand-400 dark:border-slate-600"
+                    }`}
                   >
+                    <span
+                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-semibold ${
+                        feedback && isCorrectOpt
+                          ? "border-emerald-500 bg-emerald-500 text-white"
+                          : feedback && chosen
+                          ? "border-red-400 bg-red-400 text-white"
+                          : "border-slate-300 text-slate-500 dark:border-slate-500 dark:text-slate-400"
+                      }`}
+                    >
+                      {letter}
+                    </span>
                     {opt}
                   </button>
-                ))}
-              </div>
-            ) : (
-              <form
-                onSubmit={(e) => { e.preventDefault(); const v = e.target.answer.value.trim(); if (v) submit(v); }}
-                className="flex gap-2"
-              >
-                <input name="answer" className="input" placeholder={t("prac.typeAnswer")} autoFocus />
-                <button type="submit" disabled={loading} className="btn-primary shrink-0">
-                  {loading ? <Spinner size={16} /> : t("common.check")}
-                </button>
-              </form>
-            )}
-          </div>
-        ) : (
+                );
+              })}
+            </div>
+          ) : !feedback ? (
+            <form
+              onSubmit={(e) => { e.preventDefault(); const v = e.target.answer.value.trim(); if (v) submit(v); }}
+              className="flex gap-2"
+            >
+              <input name="answer" className="input" placeholder={t("prac.typeAnswer")} autoFocus />
+              <button type="submit" disabled={loading} className="btn-primary shrink-0">
+                {loading ? <Spinner size={16} /> : t("common.check")}
+              </button>
+            </form>
+          ) : null}
+        </div>
+
+        {feedback && (
           <div className="mt-5">
-            <div className={`flex items-center gap-2 rounded-xl p-3 ${feedback.isCorrect ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-red-500/10 text-red-600 dark:text-red-400"}`}>
+            <div className={`flex items-center gap-2 rounded-lg p-3 ${feedback.isCorrect ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400" : "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400"}`}>
               {feedback.isCorrect ? <CheckCircle2 className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
               <p className="text-sm font-semibold">
                 {feedback.isCorrect ? t("prac.correctAnswer", { xp: feedback.xpEarned }) : t("prac.incorrectAnswer", { answer: feedback.correctAnswer })}

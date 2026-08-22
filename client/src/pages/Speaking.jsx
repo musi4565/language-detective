@@ -111,7 +111,7 @@ export default function Speaking() {
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-bold">{t("speak.title")}</h1>
+          <h1 className="text-xl font-semibold sm:text-2xl">{t("speak.title")}</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {t("speak.sub")}
           </p>
@@ -122,7 +122,7 @@ export default function Speaking() {
       {error && <ErrorState message={error} onRetry={() => setError("")} />}
 
       <div className="card flex flex-col items-center py-10">
-        <div className={`flex h-24 w-24 items-center justify-center rounded-full transition-all ${recording ? "animate-pulse bg-red-500/20 text-red-500" : "bg-brand-100 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300"}`}>
+        <div className={`flex h-24 w-24 items-center justify-center rounded-full transition-all ${recording ? "animate-pulse bg-red-500/20 text-red-500" : "bg-brand-50 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300"}`}>
           {recording ? <Square className="h-9 w-9" /> : <Mic className="h-9 w-9" />}
         </div>
         <p className="mt-4 text-sm font-semibold">{recording ? t("speak.listening") : t("speak.pressToRecord")}</p>
@@ -156,7 +156,7 @@ export default function Speaking() {
             <div className="grid grid-cols-2 gap-4">
               {scores.map((s) => (
                 <div key={s.label} className="text-center">
-                  <p className="text-xl font-bold">{s.value}</p>
+                  <p className="text-xl font-semibold">{s.value}</p>
                   <p className="text-xs text-slate-400">{s.label}</p>
                 </div>
               ))}
@@ -177,7 +177,7 @@ export default function Speaking() {
       )}
       {history && history.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-lg font-bold">{t("speak.pastSessions")}</h2>
+          <h2 className="text-lg font-semibold">{t("speak.pastSessions")}</h2>
           {history.map((s) => (
             <div key={s.id} className="card flex items-center gap-4">
               <ScoreRing value={s.overallScore} size={52} stroke={5} />

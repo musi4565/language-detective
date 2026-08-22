@@ -39,7 +39,7 @@ export default function Onboarding() {
 
   const step = (icon, title, desc) => (
     <div className="flex items-start gap-3">
-      <div className="rounded-xl bg-brand-100 p-2.5 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300">{icon}</div>
+      <div className="rounded-xl bg-brand-50 p-2.5 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300">{icon}</div>
       <div>
         <p className="font-semibold">{title}</p>
         <p className="text-sm text-slate-500 dark:text-slate-400">{desc}</p>
@@ -48,9 +48,9 @@ export default function Onboarding() {
   );
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-600 via-brand-700 to-violet-800 p-4 py-10">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-8 shadow-2xl dark:bg-slate-800">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t("auth.onboardingTitle")}</h1>
+    <div className="flex min-h-screen items-center justify-center bg-ink-50 p-4 py-10 dark:bg-slate-900">
+      <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-8 shadow-elevated dark:border-slate-700 dark:bg-slate-800">
+        <h1 className="text-xl font-semibold text-slate-900 dark:text-white">{t("auth.onboardingTitle")}</h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           {t("auth.onboardingSub")}
         </p>
@@ -77,7 +77,7 @@ export default function Onboarding() {
                   key={l}
                   type="button"
                   onClick={() => setLevel(l)}
-                  className={`rounded-xl border py-2.5 text-sm font-bold transition-colors ${
+                  className={`rounded-xl border py-2.5 text-sm font-semibold transition-colors ${
                     level === l
                       ? "border-brand-600 bg-brand-600 text-white"
                       : "border-slate-300 text-slate-600 hover:border-brand-400 dark:border-slate-600 dark:text-slate-300"

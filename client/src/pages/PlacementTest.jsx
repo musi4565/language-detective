@@ -47,18 +47,18 @@ export default function PlacementTest() {
 
   if (result) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4 dark:bg-slate-900">
-        <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-700 dark:bg-slate-800 animate-fade-in">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-100 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300">
+      <div className="flex min-h-screen items-center justify-center bg-ink-50 p-4 dark:bg-slate-900">
+        <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-elevated dark:border-slate-700 dark:bg-slate-800 animate-fade-in">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300">
             <ClipboardCheck className="h-8 w-8" />
           </div>
-          <h1 className="mt-4 text-2xl font-bold">{t("auth.placementComplete")}</h1>
+          <h1 className="mt-4 text-2xl font-semibold">{t("auth.placementComplete")}</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t("auth.placementSub")}</p>
 
           <div className="mt-6 grid grid-cols-3 gap-3">
-            <div className="card"><p className="text-2xl font-bold text-brand-600 dark:text-brand-300">{result.score}%</p><p className="text-xs text-slate-400">{t("common.score")}</p></div>
-            <div className="card"><p className="text-2xl font-bold text-emerald-600 dark:text-emerald-300">{result.recommendedLevel}</p><p className="text-xs text-slate-400">{t("common.levelWord")}</p></div>
-            <div className="card"><p className="text-2xl font-bold text-amber-600 dark:text-amber-300">+20</p><p className="text-xs text-slate-400">XP</p></div>
+            <div className="card"><p className="text-2xl font-semibold text-brand-600 dark:text-brand-300">{result.score}%</p><p className="text-xs text-slate-400">{t("common.score")}</p></div>
+            <div className="card"><p className="text-2xl font-semibold text-emerald-600 dark:text-emerald-300">{result.recommendedLevel}</p><p className="text-xs text-slate-400">{t("common.levelWord")}</p></div>
+            <div className="card"><p className="text-2xl font-semibold text-amber-600 dark:text-amber-300">+20</p><p className="text-xs text-slate-400">XP</p></div>
           </div>
 
           {result.weakAreas.length > 0 && (
@@ -107,17 +107,17 @@ export default function PlacementTest() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-600 via-brand-700 to-violet-800 p-4 py-10">
+    <div className="flex min-h-screen items-center justify-center bg-ink-50 p-4 py-10 dark:bg-slate-900">
       <div className="w-full max-w-2xl">
-        <div className="mb-4 flex items-center justify-between text-white">
-          <h1 className="text-lg font-bold">{t("auth.placementTitle")}</h1>
-          <span className="rounded-full bg-white/20 px-3 py-1 text-sm font-semibold">{answered}/{total} {t("auth.answered")}</span>
+        <div className="mb-4 flex items-center justify-between">
+          <h1 className="text-lg font-semibold">{t("auth.placementTitle")}</h1>
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">{answered}/{total} {t("auth.answered")}</span>
         </div>
-        <div className="mb-4 h-2 overflow-hidden rounded-full bg-white/20">
-          <div className="h-full rounded-full bg-white transition-all" style={{ width: `${(answered / total) * 100}%` }} />
+        <div className="progress-track mb-4 h-2">
+          <div className="progress-fill" style={{ width: `${(answered / total) * 100}%` }} />
         </div>
 
-        <div className="rounded-2xl bg-white p-8 shadow-2xl dark:bg-slate-800">
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-elevated dark:border-slate-700 dark:bg-slate-800">
           <span className="badge-indigo">{q.type}</span>
           <h2 className="mt-3 text-lg font-semibold">{q.prompt}</h2>
           <div className="mt-5 space-y-2">

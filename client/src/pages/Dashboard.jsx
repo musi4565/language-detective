@@ -7,11 +7,9 @@ import {
   AlertTriangle,
   BookOpen,
   Target,
-  Flame,
-  Zap,
   ArrowRight,
   MessageSquare,
-  CheckCircle2,
+  Trophy,
 } from "lucide-react";
 import api from "../api/client.js";
 import { useAuthStore } from "../store/authStore.js";
@@ -19,7 +17,6 @@ import { apiErrorMessage } from "../api/client.js";
 import { toast } from "../store/toastStore.js";
 import Spinner from "../components/Spinner.jsx";
 import ErrorState from "../components/ErrorState.jsx";
-import ScoreRing from "../components/ScoreRing.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 import { useT } from "../i18n/index.js";
 
@@ -46,71 +43,62 @@ export default function Dashboard() {
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? t("dash.goodMorning") : hour < 18 ? t("dash.goodAfternoon") : t("dash.goodEvening");
-  const today = data.todayProgress || { xpEarned: 0, writingAnalyses: 0, exercisesCompleted: 0, speakingSessions: 0 };
+  const s = data.stats;
+  const scores = [s.writingAvgScore, s.practiceAccuracy, s.speakingAvgScore].filter((v) => typeof v === "number");
+  const overall = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
 
-  const cards = [
-    { label: t("dash.xpToday"), value: today.xpEarned, icon: Zap, color: "text-amber-500 bg-amber-500/10" },
-    { label: t("dash.analyses"), value: today.writingAnalyses, icon: PenLine, color: "text-brand-500 bg-brand-500/10" },
-    { label: t("dash.exercises"), value: today.exercisesCompleted, icon: Dumbbell, color: "text-emerald-500 bg-emerald-500/10" },
-    { label: t("dash.speaking"), value: today.speakingSessions, icon: Mic, color: "text-violet-500 bg-violet-500/10" },
+  const actions = [
+    { to: "/app/writing", icon: PenLine, title: t("nav.writing"), desc: t("dash.recoWriting") },
+    { to: "/app/practice", icon: Dumbbell, title: t("dash.recoPractice"), desc: data.dueForReview > 0 ? `${data.dueForReview} ${t("common.mistakesDue")}` : t("prac.sub") },
+    { to: "/app/vocabulary", icon: BookOpen, title: t("dash.recoVocab"), desc: data.vocabDue > 0 ? `${data.vocabDue} ${t("common.wordsToReview")}` : t("common.addNewWords") },
+    { to: "/app/mistakes", icon: AlertTriangle, title: t("dash.recoMistakes"), desc: t("dash.recoMistakesDesc") },
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+    <div className="space-y-8">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">
-            {greeting}, {user.name.split(" ")[0]} 👋
-          </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            {t("dash.subtitle")}
-          </p>
+          <h1 className="text-xl font-semibold sm:text-2xl">{greeting}, {user.name.split(" ")[0]}</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t("dash.subtitle")}</p>
         </div>
-        <div className="flex gap-3">
-          <span className="badge-amber"><Flame className="h-3.5 w-3.5" /> {user.streak} {t("common.dayStreak")}</span>
-          <span className="badge-indigo"><Zap className="h-3.5 w-3.5" /> {user.xp} XP</span>
+        <div className="flex items-center gap-5">
+          <div>
+            <p className="text-xs text-slate-400">{t("common.level")}</p>
+            <p className="text-sm font-semibold">{user.level || "—"}</p>
+          </div>
+          <div className="h-8 w-px bg-slate-200 dark:bg-slate-700" />
+          <div className="w-32">
+            <div className="mb-1 flex justify-between text-xs text-slate-400">
+              <span>{t("dash.overallProgress")}</span>
+              <span className="font-semibold text-slate-600 dark:text-slate-300">{overall}%</span>
+            </div>
+            <div className="progress-track"><div className="progress-fill" style={{ width: `${overall}%` }} /></div>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {cards.map((c) => (
-          <div key={c.label} className="card flex items-center gap-3">
-            <div className={`rounded-xl p-2.5 ${c.color}`}>
-              <c.icon className="h-5 w-5" />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {actions.map((a) => (
+          <Link key={a.to} to={a.to} className="card-hover flex items-start gap-3">
+            <div className="rounded-lg bg-brand-50 p-2 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300">
+              <a.icon className="h-4.5 w-4.5" />
             </div>
-            <div>
-              <p className="text-2xl font-bold">{c.value}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{c.label}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold">{a.title}</p>
+              <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">{a.desc}</p>
             </div>
-          </div>
+            <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-slate-300 dark:text-slate-600" />
+          </Link>
         ))}
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <div className="card">
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t("dash.skillScores")}</h3>
-            <div className="flex flex-wrap items-center justify-around gap-4">
-              <div className="text-center">
-                <ScoreRing value={data.stats.writingAvgScore ?? 0} label={t("dash.writing")} />
-                <p className="mt-1 text-xs text-slate-400">{data.stats.writingAnalyses} {t("common.analyses")}</p>
-              </div>
-              <div className="text-center">
-                <ScoreRing value={data.stats.practiceAccuracy ?? 0} label={t("dash.practice")} />
-                <p className="mt-1 text-xs text-slate-400">{data.stats.exercisesCompleted} {t("common.done")}</p>
-              </div>
-              <div className="text-center">
-                <ScoreRing value={data.stats.speakingAvgScore ?? 0} label={t("dash.speaking")} />
-                <p className="mt-1 text-xs text-slate-400">{data.stats.speakingSessionsCount || 0} {t("common.sessions")}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="card">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t("dash.dueForReview")}</h3>
-              <Link to="/app/mistakes" className="text-sm font-medium text-brand-600 hover:underline dark:text-brand-400">
-                {t("dash.viewAll")} <ArrowRight className="inline h-3.5 w-3.5" />
+              <h3 className="section-title">{t("dash.dueForReview")}</h3>
+              <Link to="/app/mistakes" className="text-xs font-medium text-brand-600 hover:underline dark:text-brand-400">
+                {t("dash.viewAll")}
               </Link>
             </div>
             {data.recentMistakes.length === 0 ? (
@@ -122,18 +110,18 @@ export default function Dashboard() {
                 onCta={() => (window.location.href = "/app/writing")}
               />
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {data.recentMistakes.map((m) => (
-                  <div key={m.id} className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2.5 dark:bg-slate-700/40">
+                  <div key={m.id} className="flex items-center justify-between gap-3 rounded-lg px-2.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-700/30">
                     <div className="min-w-0">
                       <p className="truncate text-sm">
-                        <span className="font-medium text-red-500 line-through">{m.originalText}</span>
-                        <span className="mx-1 text-slate-400">→</span>
+                        <span className="text-red-500 line-through">{m.originalText}</span>
+                        <span className="mx-1.5 text-slate-300">→</span>
                         <span className="font-medium text-emerald-600 dark:text-emerald-400">{m.correctedText}</span>
                       </p>
-                      <p className="text-xs text-slate-400">{m.category}{m.topic ? ` · ${m.topic}` : ""} · {m.severity}</p>
+                      <p className="text-xs text-slate-400">{m.category}{m.topic ? ` · ${m.topic}` : ""}</p>
                     </div>
-                    <Link to="/app/mistakes" className="ml-2 shrink-0 text-brand-600 hover:underline dark:text-brand-400 text-xs font-semibold">{t("dash.review")}</Link>
+                    <Link to="/app/mistakes" className="shrink-0 text-xs font-medium text-brand-600 hover:underline dark:text-brand-400">{t("dash.review")}</Link>
                   </div>
                 ))}
               </div>
@@ -141,19 +129,19 @@ export default function Dashboard() {
           </div>
 
           <div className="card">
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t("dash.weakestTopics")}</h3>
+            <h3 className="section-title mb-3">{t("dash.weakestTopics")}</h3>
             {data.weakestTopics.length === 0 ? (
               <p className="text-sm text-slate-500 dark:text-slate-400">{t("dash.weakestEmpty")}</p>
             ) : (
               <div className="space-y-3">
-                {data.weakestTopics.map((t) => (
-                  <div key={t.topic}>
+                {data.weakestTopics.map((topic) => (
+                  <div key={topic.topic}>
                     <div className="mb-1 flex justify-between text-sm">
-                      <span className="font-medium">{t.topic}</span>
-                      <span className="text-slate-400">{t.count}× · mastery {t.avgMastery}%</span>
+                      <span className="font-medium">{topic.topic}</span>
+                      <span className="text-xs text-slate-400">{topic.count}× · {topic.avgMastery}%</span>
                     </div>
-                    <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-700">
-                      <div className="h-full rounded-full bg-gradient-to-r from-red-500 to-amber-400" style={{ width: `${Math.max(10, 100 - t.avgMastery)}%` }} />
+                    <div className="progress-track">
+                      <div className="h-full rounded-full bg-amber-400 transition-all duration-500" style={{ width: `${Math.max(6, 100 - topic.avgMastery)}%` }} />
                     </div>
                   </div>
                 ))}
@@ -165,29 +153,17 @@ export default function Dashboard() {
         <div className="space-y-6">
           <DailyChallengeCard />
           <div className="card">
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t("dash.recommended")}</h3>
-            <div className="space-y-2">
-              <RecommendRow to="/app/writing" icon={PenLine} title={t("nav.writing")} desc={t("dash.recoWriting")} />
-              <RecommendRow to="/app/practice" icon={Dumbbell} title={t("dash.recoPractice")} desc={data.dueForReview > 0 ? `${data.dueForReview} ${t("common.mistakesDue")}` : t("prac.sub")} />
+            <h3 className="section-title mb-3">{t("dash.more")}</h3>
+            <div className="space-y-1">
               <RecommendRow to="/app/chat" icon={MessageSquare} title={t("dash.recoChat")} desc={t("dash.recoChatDesc")} />
-              <RecommendRow to="/app/vocabulary" icon={BookOpen} title={t("dash.recoVocab")} desc={data.vocabDue > 0 ? `${data.vocabDue} ${t("common.wordsToReview")}` : t("common.addNewWords")} />
+              <RecommendRow to="/app/speaking" icon={Mic} title={t("speak.title")} desc={t("speak.sub")} />
+              <RecommendRow
+                to="/app/achievements"
+                icon={Trophy}
+                title={t("dash.achievements")}
+                desc={data.achievements.length > 0 ? `${data.achievements.length} ${t("common.unlocked").toLowerCase()}` : t("dash.achEmpty")}
+              />
             </div>
-          </div>
-
-          <div className="card">
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t("dash.achievements")}</h3>
-            <div className="flex flex-wrap gap-2">
-              {data.achievements.length === 0 ? (
-                <p className="text-sm text-slate-500 dark:text-slate-400">{t("dash.achEmpty")}</p>
-              ) : (
-                data.achievements.map((a) => (
-                  <span key={a.id} className="badge-green" title={a.description}>{a.title}</span>
-                ))
-              )}
-            </div>
-            <Link to="/app/achievements" className="mt-3 inline-block text-sm font-medium text-brand-600 hover:underline dark:text-brand-400">
-              {t("dash.viewAllAch")}
-            </Link>
           </div>
         </div>
       </div>
@@ -226,38 +202,38 @@ function DailyChallengeCard() {
   };
 
   return (
-    <div className="card border-brand-500/40 bg-gradient-to-br from-brand-600 to-violet-700 text-white">
+    <div className="card border-l-2 border-l-brand-500">
       <div className="flex items-center gap-2">
-        <Target className="h-5 w-5" />
-        <h3 className="font-semibold">{t("dash.dailyChallenge")}</h3>
+        <Target className="h-4 w-4 text-brand-500" />
+        <h3 className="text-sm font-semibold">{t("dash.dailyChallenge")}</h3>
         {challenge?.attempt && !feedback && (
-          <span className="ml-auto text-xs text-white/70">{challenge.attempt.isCorrect ? t("dash.completed") : t("dash.attempted")}</span>
+          <span className="ml-auto text-xs text-slate-400">{challenge.attempt.isCorrect ? t("dash.completed") : t("dash.attempted")}</span>
         )}
       </div>
       {loading ? (
-        <div className="mt-4 flex justify-center text-white/70"><Spinner size={20} /></div>
+        <div className="mt-4 flex justify-center text-brand-500"><Spinner size={18} /></div>
       ) : (
-        <p className="mt-2 text-sm text-white/80">{challenge?.prompt}</p>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{challenge?.prompt}</p>
       )}
       {!feedback ? (
-        <form onSubmit={submit} className="mt-4 flex gap-2">
+        <form onSubmit={submit} className="mt-3 flex gap-2">
           <input
-            className="flex-1 rounded-xl border border-white/20 bg-white/15 px-3 py-2 text-sm text-white placeholder-white/50 focus:border-white/40 focus:outline-none"
+            className="input"
             placeholder={t("dash.placeholder")}
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
             disabled={!!challenge?.attempt}
           />
-          <button type="submit" disabled={submitting || !answer.trim() || !!challenge?.attempt} className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-brand-700 hover:bg-white/90">
-            {submitting ? <Spinner size={16} /> : "+20 XP"}
+          <button type="submit" disabled={submitting || !answer.trim() || !!challenge?.attempt} className="btn-primary shrink-0 px-3 text-xs">
+            {submitting ? <Spinner size={14} /> : "+20 XP"}
           </button>
         </form>
       ) : (
-        <div className="mt-4">
-          <p className={`text-sm font-semibold ${feedback.isCorrect ? "text-emerald-300" : "text-red-300"}`}>
+        <div className="mt-3">
+          <p className={`text-sm font-medium ${feedback.isCorrect ? "text-emerald-600 dark:text-emerald-400" : "text-red-500"}`}>
             {feedback.isCorrect ? t("dash.correctAnswer", { xp: feedback.xpEarned }) : t("dash.wrongAnswer", { answer: feedback.correctAnswer })}
           </p>
-          {feedback.explanation && <p className="mt-1 text-xs text-white/70">{feedback.explanation}</p>}
+          {feedback.explanation && <p className="mt-1 text-xs text-slate-400">{feedback.explanation}</p>}
         </div>
       )}
     </div>
@@ -266,34 +242,34 @@ function DailyChallengeCard() {
 
 function RecommendRow({ to, icon: Icon, title, desc }) {
   return (
-    <Link to={to} className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/40">
-      <div className="rounded-lg bg-brand-500/10 p-2 text-brand-600 dark:text-brand-300">
+    <Link to={to} className="flex items-center gap-3 rounded-lg p-2 transition-colors duration-200 hover:bg-slate-50 dark:hover:bg-slate-700/40">
+      <div className="rounded-lg bg-slate-100 p-2 text-slate-500 dark:bg-slate-700/60 dark:text-slate-300">
         <Icon className="h-4 w-4" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold">{title}</p>
-        <p className="truncate text-xs text-slate-500 dark:text-slate-400">{desc}</p>
+        <p className="text-sm font-medium">{title}</p>
+        <p className="truncate text-xs text-slate-400">{desc}</p>
       </div>
-      <ArrowRight className="h-4 w-4 text-slate-300 dark:text-slate-600" />
+      <ArrowRight className="h-3.5 w-3.5 shrink-0 text-slate-300 dark:text-slate-600" />
     </Link>
   );
 }
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-6">
-      <div className="skeleton h-8 w-64" />
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {[1, 2, 3, 4].map((i) => <div key={i} className="skeleton h-24" />)}
+    <div className="space-y-8">
+      <div className="skeleton h-10 w-72" />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => <div key={i} className="skeleton h-16" />)}
       </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <div className="skeleton h-48" />
-          <div className="skeleton h-64" />
+          <div className="skeleton h-40" />
         </div>
         <div className="space-y-6">
-          <div className="skeleton h-40" />
-          <div className="skeleton h-64" />
+          <div className="skeleton h-32" />
+          <div className="skeleton h-48" />
         </div>
       </div>
     </div>

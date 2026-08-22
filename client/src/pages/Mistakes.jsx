@@ -61,24 +61,24 @@ export default function Mistakes() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">{t("mist.title")}</h1>
+        <h1 className="text-xl font-semibold sm:text-2xl">{t("mist.title")}</h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           {t("mist.sub")}
         </p>
       </div>
 
       {stats && (
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatCard label={t("mist.total")} value={stats.total} />
-          <StatCard label={t("mist.mastered")} value={stats.mastered} />
-          <StatCard label={t("mist.due")} value={stats.due} />
-          <StatCard label={t("mist.avgMastery")} value={`${stats.averageMastery}%`} />
+        <div className="card flex flex-wrap divide-x divide-slate-100 dark:divide-slate-700/60">
+          <StatCol label={t("mist.total")} value={stats.total} />
+          <StatCol label={t("mist.mastered")} value={stats.mastered} />
+          <StatCol label={t("mist.due")} value={stats.due} />
+          <StatCol label={t("mist.avgMastery")} value={`${stats.averageMastery}%`} />
         </div>
       )}
 
       <div className="card">
-        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-          <Filter className="h-4 w-4" /> {t("mist.byCategory")}
+        <h3 className="mb-3 flex items-center gap-2 section-title">
+          <Filter className="h-3.5 w-3.5" /> {t("mist.byCategory")}
         </h3>
         {stats && Object.keys(stats.byCategory).length > 0 ? (
           <div className="flex flex-wrap gap-3">
@@ -88,8 +88,8 @@ export default function Mistakes() {
                   <span className="font-medium">{cat.replace("_", " ")}</span>
                   <span className="text-slate-400">{count}</span>
                 </div>
-                <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-700">
-                  <div className="h-full rounded-full bg-brand-500" style={{ width: `${(count / maxCategory) * 100}%` }} />
+                <div className="progress-track">
+                  <div className="progress-fill" style={{ width: `${(count / maxCategory) * 100}%` }} />
                 </div>
               </div>
             ))}
@@ -142,33 +142,29 @@ export default function Mistakes() {
           onCta={filter === "ALL" ? () => (window.location.href = "/app/writing") : undefined}
         />
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {items.map((m) => {
             const due = !m.nextReviewAt || new Date(m.nextReviewAt) <= new Date();
             return (
               <div key={m.id} className="card">
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-1.5">
                   <span className={`badge ${m.category === "TENSE" || m.category === "GRAMMAR" ? "badge-red" : "badge-indigo"}`}>{m.category.replace("_", " ")}</span>
-                  <span className="badge-slate">{m.severity}</span>
-                  {m.topic && <span className="badge-indigo">{m.topic}</span>}
-                  <span className="badge-slate">{m.source}</span>
+                  {m.topic && <span className="badge-slate">{m.topic}</span>}
                   {due && <span className="badge-amber"><Clock className="h-3 w-3" /> {t("common.dueNow")}</span>}
                 </div>
 
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-                  <span className="font-medium text-red-500 line-through">{m.originalText}</span>
-                  <span className="text-slate-400">→</span>
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">{m.correctedText}</span>
+                <div className="mt-2.5 flex flex-wrap items-center gap-2 text-sm">
+                  <span className="text-red-500 line-through">{m.originalText}</span>
+                  <span className="text-slate-300">→</span>
+                  <span className="font-medium text-emerald-600 dark:text-emerald-400">{m.correctedText}</span>
                 </div>
-                <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{m.explanation}</p>
+                <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">{m.explanation}</p>
 
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3 dark:border-slate-700">
-                  <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
-                    <span>{t("common.mastery")}: <b className={m.masteryScore >= 80 ? "text-emerald-500" : m.masteryScore >= 50 ? "text-amber-500" : "text-red-500"}>{m.masteryScore}%</b></span>
-                    <span>{t("common.reviewed")} {m.reviewCount}×</span>
-                    <span>{t("common.correct")} {m.correctCount} · {t("common.incorrect")} {m.incorrectCount}</span>
-                    <span>{t("common.lastReview")}: {m.lastReviewedAt ? new Date(m.lastReviewedAt).toLocaleDateString() : t("common.never")}</span>
-                  </div>
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3 dark:border-slate-700/60">
+                  <span className="text-xs text-slate-400">
+                    {t("common.mastery")} <b className={m.masteryScore >= 80 ? "text-emerald-500" : m.masteryScore >= 50 ? "text-amber-500" : "text-red-500"}>{m.masteryScore}%</b>
+                    {" · "}{t("common.reviewed")} {m.reviewCount}×
+                  </span>
                   <div className="flex gap-2">
                     <button
                       onClick={() => review(m.id, true)}
@@ -194,13 +190,13 @@ export default function Mistakes() {
 
       {stats && Object.keys(stats.byCategory).length > 0 && (
         <div className="card">
-          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            <CheckCircle2 className="h-4 w-4" /> {t("mist.mostCommon")}
+          <h3 className="mb-3 flex items-center gap-2 section-title">
+            <CheckCircle2 className="h-3.5 w-3.5" /> {t("mist.mostCommon")}
           </h3>
           <div className="space-y-2">
             {stats.mostCommon.slice(0, 5).map((m, i) => (
               <div key={m.topic} className="flex items-center gap-3 text-sm">
-                <span className="w-6 font-bold text-slate-400">{i + 1}</span>
+                <span className="w-5 text-slate-400">{i + 1}</span>
                 <span className="flex-1 font-medium">{m.topic}</span>
                 <span className="badge-slate">{m.count}×</span>
               </div>
@@ -212,10 +208,10 @@ export default function Mistakes() {
   );
 }
 
-function StatCard({ label, value }) {
+function StatCol({ label, value }) {
   return (
-    <div className="card">
-      <p className="text-2xl font-bold">{value}</p>
+    <div className="flex-1 px-4 py-1 first:pl-0 last:pr-0">
+      <p className="text-xl font-semibold">{value}</p>
       <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
     </div>
   );

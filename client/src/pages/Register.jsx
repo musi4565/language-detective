@@ -41,16 +41,16 @@ export default function Register() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-600 via-brand-700 to-violet-800 p-4 py-10">
+    <div className="flex min-h-screen items-center justify-center bg-ink-50 p-4 py-10 dark:bg-slate-900">
       <div className="w-full max-w-lg">
-        <Link to="/" className="mb-6 flex items-center justify-center gap-2 text-white">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
-            <PenLine className="h-5 w-5" />
+        <Link to="/" className="mb-6 flex items-center justify-center gap-2">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">
+            <PenLine className="h-4 w-4" />
           </div>
-          <span className="text-xl font-bold">Language Detective</span>
+          <span className="text-lg font-semibold">Language Detective</span>
         </Link>
-        <div className="rounded-2xl bg-white p-8 shadow-2xl dark:bg-slate-800">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t("auth.createAccount")}</h1>
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-elevated dark:border-slate-700 dark:bg-slate-800">
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-white">{t("auth.createAccount")}</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t("auth.createSub")}</p>
 
           <form onSubmit={submit} className="mt-6 space-y-4">

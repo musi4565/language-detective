@@ -108,7 +108,7 @@ export default function Writing() {
       <div className="space-y-6">
         <div className="flex items-center gap-3">
           <button onClick={() => setView("new")} className="btn-outline"><ArrowLeft className="h-4 w-4" /> {t("writing.newAnalysis")}</button>
-          <h1 className="text-xl font-bold">{t("writing.historyTitle")}</h1>
+          <h1 className="text-xl font-semibold">{t("writing.historyTitle")}</h1>
         </div>
 
         {view === "detail" && result && (
@@ -148,7 +148,7 @@ export default function Writing() {
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-bold">{t("writing.title")}</h1>
+          <h1 className="text-xl font-semibold sm:text-2xl">{t("writing.title")}</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {t("writing.sub")}
           </p>
@@ -199,7 +199,7 @@ function ResultView({ result, onBack, onNew, historyMode, renderHighlighted }) {
         <div className="flex items-center gap-4">
           <ScoreRing value={score} size={84} stroke={8} label={t("common.score")} />
           <div>
-            <h2 className="text-lg font-bold">{score >= 80 ? t("writing.greatWork") : score >= 60 ? t("writing.goodEffort") : t("writing.keepGoing")}</h2>
+            <h2 className="text-lg font-semibold">{score >= 80 ? t("writing.greatWork") : score >= 60 ? t("writing.goodEffort") : t("writing.keepGoing")}</h2>
             <p className="max-w-md text-sm text-slate-500 dark:text-slate-400">{a.summary}</p>
           </div>
         </div>

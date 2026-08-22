@@ -36,10 +36,10 @@ export default function Landing() {
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-violet-600 text-white">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">
               <PenLine className="h-5 w-5" />
             </div>
-            <span className="text-lg font-bold">Language Detective</span>
+            <span className="text-lg font-semibold">Language Detective</span>
           </div>
           <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 dark:text-slate-300 md:flex">
             <a href="#how" className="hover:text-brand-600">{t("landing.nav.how")}</a>
@@ -64,11 +64,11 @@ export default function Landing() {
       </header>
 
       <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute -top-40 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-gradient-to-br from-brand-500/20 to-violet-600/20 blur-3xl" />
+        <div className="pointer-events-none absolute -top-40 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-brand-500/10 blur-3xl" />
         <div className="mx-auto max-w-6xl px-4 pb-20 pt-24 text-center">
           <span className="badge-indigo mb-6 text-sm"><Sparkles className="h-4 w-4" /> {t("landing.badge")}</span>
-          <h1 className="mx-auto max-w-3xl text-4xl font-extrabold leading-tight sm:text-6xl">
-            {t("landing.hero.title1")} <span className="bg-gradient-to-r from-brand-500 to-violet-600 bg-clip-text text-transparent">{t("landing.hero.title2")}</span>
+          <h1 className="mx-auto max-w-3xl text-4xl font-semibold leading-tight sm:text-5xl">
+            {t("landing.hero.title1")} <span className="text-brand-600">{t("landing.hero.title2")}</span>
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg text-slate-600 dark:text-slate-300">
             {t("landing.hero.sub")}
@@ -92,7 +92,7 @@ export default function Landing() {
 
       <section id="how" className="border-y border-slate-200 bg-slate-50 py-16 dark:border-slate-700 dark:bg-slate-800/40">
         <div className="mx-auto max-w-6xl px-4">
-          <h2 className="text-center text-3xl font-bold">{t("landing.how.title")}</h2>
+          <h2 className="text-center text-3xl font-semibold">{t("landing.how.title")}</h2>
           <p className="mx-auto mt-2 max-w-xl text-center text-slate-600 dark:text-slate-300">
             {t("landing.how.sub")}
           </p>
@@ -104,7 +104,7 @@ export default function Landing() {
             ].map((s) => (
               <div key={s.step} className="card">
                 <span className="text-3xl font-extrabold text-brand-500/40">{s.step}</span>
-                <h3 className="mt-2 text-lg font-bold">{t(s.title)}</h3>
+                <h3 className="mt-2 text-lg font-semibold">{t(s.title)}</h3>
                 <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{t(s.desc)}</p>
               </div>
             ))}
@@ -114,7 +114,7 @@ export default function Landing() {
 
       <section id="features" className="py-16">
         <div className="mx-auto max-w-6xl px-4">
-          <h2 className="text-center text-3xl font-bold">{t("landing.feat.title")}</h2>
+          <h2 className="text-center text-3xl font-semibold">{t("landing.feat.title")}</h2>
           <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {[
               { icon: PenLine, title: "landing.feat1t", desc: "landing.feat1d" },
@@ -128,7 +128,7 @@ export default function Landing() {
                 <div className="rounded-xl bg-brand-500/10 p-3 text-brand-600 dark:text-brand-300 w-fit">
                   <f.icon className="h-6 w-6" />
                 </div>
-                <h3 className="mt-3 text-lg font-bold">{t(f.title)}</h3>
+                <h3 className="mt-3 text-lg font-semibold">{t(f.title)}</h3>
                 <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{t(f.desc)}</p>
               </div>
             ))}
@@ -136,9 +136,9 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="border-y border-slate-200 bg-gradient-to-br from-brand-600 to-violet-700 py-16 text-white dark:border-slate-700">
+      <section className="border-y border-slate-200 bg-brand-600 py-16 text-white dark:border-slate-700">
         <div className="mx-auto max-w-6xl px-4 text-center">
-          <h2 className="text-3xl font-bold">{t("landing.cta.title")}</h2>
+          <h2 className="text-3xl font-semibold">{t("landing.cta.title")}</h2>
           <p className="mx-auto mt-3 max-w-2xl text-white/80">
             {t("landing.cta.sub")}
           </p>
@@ -153,7 +153,7 @@ export default function Landing() {
 
       <section id="faq" className="py-16">
         <div className="mx-auto max-w-3xl px-4">
-          <h2 className="text-center text-3xl font-bold">{t("landing.nav.faq")}</h2>
+          <h2 className="text-center text-3xl font-semibold">{t("landing.nav.faq")}</h2>
           <div className="mt-8 space-y-3">
             {[
               { q: "landing.faq1q", a: "landing.faq1a" },
@@ -171,10 +171,10 @@ export default function Landing() {
       <footer className="border-t border-slate-200 py-8 dark:border-slate-700">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 sm:flex-row">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-brand-500 to-violet-600 text-white">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-600 text-white">
               <PenLine className="h-4 w-4" />
             </div>
-            <span className="font-bold">Language Detective</span>
+            <span className="font-semibold">Language Detective</span>
           </div>
           <p className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400">
             <ShieldCheck className="h-4 w-4" /> {t("landing.footer")}

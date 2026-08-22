@@ -29,7 +29,7 @@ export default function Achievements() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">{t("ach.title")}</h1>
+        <h1 className="text-xl font-semibold sm:text-2xl">{t("ach.title")}</h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           {t("ach.sub", { owned: ownedCount, total: achievements.length })}
         </p>
@@ -43,7 +43,7 @@ export default function Achievements() {
                 <Trophy className="h-6 w-6" />
               </div>
               <div className="min-w-0">
-                <p className="font-bold">{a.title}</p>
+                <p className="font-semibold">{a.title}</p>
                 <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{a.description}</p>
                 <div className="mt-2 flex items-center gap-2">
                   <span className="badge-amber">+{a.xpReward} XP</span>
@@ -57,7 +57,7 @@ export default function Achievements() {
                 <Lock className="h-6 w-6" />
               </div>
               <div className="min-w-0">
-                <p className="font-bold">{a.title}</p>
+                <p className="font-semibold">{a.title}</p>
                 <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{a.description}</p>
                 <span className="badge-slate mt-2">{t("common.locked")}</span>
               </div>

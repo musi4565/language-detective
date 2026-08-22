@@ -126,7 +126,7 @@ export default function Chat() {
         <div className="flex-1 space-y-4 overflow-y-auto p-4">
           {!activeId && (
             <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-              <div className="rounded-2xl bg-brand-100 p-4 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300">
+              <div className="rounded-2xl bg-brand-50 p-4 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300">
                 <Bot className="h-8 w-8" />
               </div>
               <p className="font-semibold">{t("chat.practiceIn", { lang: user?.learningLanguage || "English" })}</p>

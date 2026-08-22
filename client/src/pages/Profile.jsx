@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { User, Mail, BookOpen, Languages, KeyRound, Camera } from "lucide-react";
+import { User, Mail, BookOpen, Languages, KeyRound, Camera, Zap, Flame } from "lucide-react";
 import api from "../api/client.js";
 import { useAuthStore } from "../store/authStore.js";
 import { apiErrorMessage } from "../api/client.js";
@@ -71,28 +71,28 @@ export default function Profile() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{t("prof.title")}</h1>
+      <h1 className="text-xl font-semibold sm:text-2xl">{t("prof.title")}</h1>
 
       <div className="card">
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
           <div className="flex flex-col items-center gap-2">
-            <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-brand-500 to-violet-600 text-2xl font-bold text-white">
+            <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-brand-600 text-2xl font-semibold text-white">
               {user.avatar ? <img src={user.avatar} alt="avatar" className="h-full w-full" /> : user.name.charAt(0).toUpperCase()}
             </div>
             <button className="btn-outline px-3 py-1.5 text-xs"><Camera className="h-3.5 w-3.5" /> {t("prof.change")}</button>
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-bold">{user.name}</h2>
+            <h2 className="text-lg font-semibold">{user.name}</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <span className="badge-indigo">{t("common.level")} {user.level}</span>
-              <span className="badge-amber">⚡ {user.xp} XP</span>
-              <span className="badge-green">🔥 {user.streak} {t("common.dayStreak")}</span>
+              <span className="badge-amber"><Zap className="h-3 w-3" /> {user.xp} XP</span>
+              <span className="badge-green"><Flame className="h-3 w-3" /> {user.streak} {t("common.dayStreak")}</span>
               <span className="badge-slate">{user.role}</span>
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
               {AVATARS.map((a) => (
-                <button key={a} onClick={() => setAvatar(a)} className={`overflow-hidden rounded-lg border-2 transition-colors ${user.avatar === a ? "border-brand-500" : "border-transparent hover:border-brand-300"}`}>
+                <button key={a} onClick={() => setAvatar(a)} className={`overflow-hidden rounded-full border-2 transition-colors duration-200 ${user.avatar === a ? "border-brand-500" : "border-transparent hover:border-brand-300"}`}>
                   <img src={a} alt="avatar option" className="h-10 w-10" />
                 </button>
               ))}
@@ -103,7 +103,7 @@ export default function Profile() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <form onSubmit={saveProfile} className="card space-y-4">
-          <h3 className="font-bold">{t("prof.learningSettings")}</h3>
+          <h3 className="font-semibold">{t("prof.learningSettings")}</h3>
           <div>
             <label className="label flex items-center gap-1.5"><User className="h-3.5 w-3.5" /> {t("auth.name")}</label>
             <input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
@@ -130,7 +130,7 @@ export default function Profile() {
                   key={l}
                   type="button"
                   onClick={() => setForm({ ...form, level: l })}
-                  className={`rounded-lg border px-3 py-1.5 text-sm font-bold ${form.level === l ? "border-brand-600 bg-brand-600 text-white" : "border-slate-300 dark:border-slate-600"}`}
+                  className={`rounded-lg border px-3 py-1.5 text-sm font-semibold ${form.level === l ? "border-brand-600 bg-brand-600 text-white" : "border-slate-300 dark:border-slate-600"}`}
                 >
                   {l}
                 </button>
@@ -141,7 +141,7 @@ export default function Profile() {
         </form>
 
         <form onSubmit={changePassword} className="card space-y-4">
-          <h3 className="font-bold flex items-center gap-2"><KeyRound className="h-4 w-4" /> {t("prof.changePassword")}</h3>
+          <h3 className="font-semibold flex items-center gap-2"><KeyRound className="h-4 w-4" /> {t("prof.changePassword")}</h3>
           <div>
             <label className="label">{t("prof.currentPassword")}</label>
             <input type="password" className="input" value={passForm.currentPassword} onChange={(e) => setPassForm({ ...passForm, currentPassword: e.target.value })} required />

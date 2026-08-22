@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { BookOpen, Plus, Trash2, Volume2, ThumbsUp, ThumbsDown, X } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { BookOpen, Plus, Trash2, Volume2, ThumbsUp, ThumbsDown, X, Search } from "lucide-react";
 import api from "../api/client.js";
 import { apiErrorMessage } from "../api/client.js";
 import { toast } from "../store/toastStore.js";
@@ -8,6 +8,8 @@ import EmptyState from "../components/EmptyState.jsx";
 import ErrorState from "../components/ErrorState.jsx";
 import Modal from "../components/Modal.jsx";
 import { useT } from "../i18n/index.js";
+
+const DIFFICULTIES = ["all", "easy", "medium", "hard"];
 
 export default function Vocabulary() {
   const t = useT();
@@ -18,6 +20,8 @@ export default function Vocabulary() {
   const [word, setWord] = useState("");
   const [adding, setAdding] = useState(false);
   const [dueOnly, setDueOnly] = useState(false);
+  const [difficulty, setDifficulty] = useState("all");
+  const [query, setQuery] = useState("");
   const [reviewingId, setReviewingId] = useState(null);
 
   const load = useCallback(async () => {
@@ -25,6 +29,7 @@ export default function Vocabulary() {
     try {
       const params = new URLSearchParams();
       if (dueOnly) params.set("due", "true");
+      if (difficulty !== "all") params.set("difficulty", difficulty);
       const { data } = await api.get(`/vocabulary?${params}`);
       setItems(data.data.items);
     } catch (err) {
@@ -32,9 +37,15 @@ export default function Vocabulary() {
     } finally {
       setLoading(false);
     }
-  }, [dueOnly]);
+  }, [dueOnly, difficulty]);
 
   useEffect(() => { load(); }, [load]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter((v) => v.word.toLowerCase().includes(q) || v.translation?.toLowerCase().includes(q));
+  }, [items, query]);
 
   const addWord = async (e) => {
     e.preventDefault();
@@ -77,19 +88,37 @@ export default function Vocabulary() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-bold">{t("vocab.title")}</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            {t("vocab.sub")}
-          </p>
+          <h1 className="text-xl font-semibold sm:text-2xl">{t("vocab.title")}</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t("vocab.sub")}</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => setDueOnly((d) => !d)} className={`btn-outline ${dueOnly ? "border-brand-500 text-brand-600" : ""}`}>
+          <button onClick={() => setDueOnly((d) => !d)} className={`btn-outline ${dueOnly ? "border-brand-400 text-brand-600 dark:text-brand-400" : ""}`}>
             {t("vocab.dueForReview")}
           </button>
           <button onClick={() => setModal(true)} className="btn-primary"><Plus className="h-4 w-4" /> {t("vocab.addWord")}</button>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <input className="input pl-10" placeholder={t("vocab.searchPh")} value={query} onChange={(e) => setQuery(e.target.value)} />
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {DIFFICULTIES.map((d) => (
+            <button
+              key={d}
+              onClick={() => setDifficulty(d)}
+              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors duration-200 ${
+                difficulty === d ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300"
+              }`}
+            >
+              {d === "all" ? t("vocab.allLevels") : t(`vocab.diff.${d}`)}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -97,7 +126,7 @@ export default function Vocabulary() {
         <ErrorState message={error} onRetry={load} />
       ) : loading ? (
         <div className="flex justify-center py-16 text-brand-600"><Spinner size={28} /></div>
-      ) : items.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <EmptyState
           title={dueOnly ? t("vocab.nothingDue") : t("vocab.noWords")}
           description={dueOnly ? t("vocab.allReviewed") : t("vocab.noWordsDesc")}
@@ -106,34 +135,39 @@ export default function Vocabulary() {
           onCta={dueOnly ? undefined : () => setModal(true)}
         />
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((v) => {
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((v) => {
             const due = !v.nextReviewAt || new Date(v.nextReviewAt) <= new Date();
             return (
-              <div key={v.id} className="card flex flex-col">
+              <div key={v.id} className="card-hover flex flex-col">
                 <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h3 className="text-lg font-bold">{v.word}</h3>
+                  <div className="min-w-0">
+                    <h3 className="truncate text-base font-semibold">{v.word}</h3>
                     {v.pronunciation && <p className="text-xs text-slate-400">{v.pronunciation}</p>}
                   </div>
-                  <div className="flex gap-1">
-                    <button className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700" title={t("vocab.listen")}>
-                      <Volume2 className="h-4 w-4" onClick={() => { try { const u = new SpeechSynthesisUtterance(v.word); u.lang = "en-US"; speechSynthesis.speak(u); } catch {} }} />
+                  <div className="flex shrink-0 gap-0.5">
+                    <button
+                      onClick={() => { try { const u = new SpeechSynthesisUtterance(v.word); u.lang = "en-US"; speechSynthesis.speak(u); } catch {} }}
+                      className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                      title={t("vocab.listen")}
+                    >
+                      <Volume2 className="h-4 w-4" />
                     </button>
-                    <button onClick={() => remove(v.id)} className="rounded-lg p-1.5 text-slate-400 hover:bg-red-500/10 hover:text-red-500">
+                    <button onClick={() => remove(v.id)} className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10">
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
 
-                {v.translation && <p className="mt-1 text-sm font-medium text-brand-600 dark:text-brand-300">{v.translation}</p>}
-                {v.definition && <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{v.definition}</p>}
-                {v.example && <p className="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-xs italic text-slate-500 dark:bg-slate-700/40 dark:text-slate-300">"{v.example}"</p>}
+                {v.translation && <p className="mt-1 text-sm font-medium text-brand-600 dark:text-brand-400">{v.translation}</p>}
+                {v.example && <p className="mt-2 text-xs italic text-slate-500 dark:text-slate-400">"{v.example}"</p>}
 
-                <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3 text-xs dark:border-slate-700">
-                  <span className="badge-slate">{v.difficulty}</span>
-                  <span className={due ? "badge-amber" : "badge-green"}>{due ? t("common.dueNow") : t("vocab.reviewDate", { date: new Date(v.nextReviewAt).toLocaleDateString() })}</span>
-                  <span className="ml-auto">{t("common.mastery").toLowerCase()} <b className={v.masteryScore >= 80 ? "text-emerald-500" : "text-amber-500"}>{v.masteryScore}%</b></span>
+                <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3 text-xs dark:border-slate-700/60">
+                  <span className="badge-slate">{t(`vocab.diff.${v.difficulty}`) || v.difficulty}</span>
+                  <span className={due ? "badge-amber" : "badge-green"}>
+                    {due ? t("common.dueNow") : t("vocab.reviewDate", { date: new Date(v.nextReviewAt).toLocaleDateString() })}
+                  </span>
+                  <span className="ml-auto text-slate-400">{v.masteryScore}%</span>
                 </div>
 
                 <div className="mt-3 flex gap-2">
@@ -156,9 +190,7 @@ export default function Vocabulary() {
             <label className="label">{t("common.word")}</label>
             <input className="input" placeholder={t("vocab.examplePh")} value={word} onChange={(e) => setWord(e.target.value)} autoFocus required />
           </div>
-          <p className="text-xs text-slate-400">
-            {t("vocab.modalHint")}
-          </p>
+          <p className="text-xs text-slate-400">{t("vocab.modalHint")}</p>
           <div className="flex justify-end gap-2">
             <button type="button" onClick={() => setModal(false)} className="btn-outline"><X className="h-4 w-4" /> {t("common.cancel")}</button>
             <button type="submit" disabled={adding} className="btn-primary">{adding ? <Spinner size={16} /> : t("vocab.addWord")}</button>
